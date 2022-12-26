@@ -1,6 +1,5 @@
 from app import db
 # todo nullable
-# todo foregin keys
 
 
 class Faculty_member(db.Model):
@@ -25,8 +24,8 @@ class Student(db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    sId = db.Column(db.Integer(9))
-    gpa = db.Column(db.Double(1))
+    sId = db.Column(db.Integer)
+    gpa = db.Column(db.Float)
     groupOwner = db.relationship('Group', backref='student', lazy=True)
     member = db.Column(db.Integer, db.ForeignKey('student.id'))
     studentReport = db.relationship('Individual_report', backref='student', lazy=True)
@@ -49,19 +48,19 @@ class Propsal(db.Model):
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    gpa = db.Column(db.Double(1))
+    gpa = db.Column(db.Float)
     owner = db.Column(db.Integer, db.ForeignKey('student.id'),nullable=False) #fk
     member = db.relationship('Student', backref='group', lazy=True) #fk
     ownedPropsal = db.relationship('Propsal', backref='group', lazy=True) #fk
     groupReport = db.relationship('Group_report', backref='group', lazy=True)
-    code = db.Column(db.Integer(10))
+    code = db.Column(db.Integer)
     
     def __repr__(self):
         return '<Group {}>'.format(self.id)
 
 class Individual_report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    score = db.Column(db.Integer(2))
+    score = db.Column(db.Integer)
     fId = db.Column(db.Integer, db.ForeignKey('faculty_member.id'),nullable=False)
     sId = db.Column(db.Integer, db.ForeignKey('student.id'),nullable=False)
     
@@ -70,7 +69,7 @@ class Individual_report(db.Model):
 
 class Group_report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    score = db.Column(db.Integer(2))
+    score = db.Column(db.Integer)
     fId = db.Column(db.Integer, db.ForeignKey('faculty_member.id'),nullable=False)
     gId = db.Column(db.Integer, db.ForeignKey('group.id'),nullable=False)
     
