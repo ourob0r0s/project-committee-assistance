@@ -1,16 +1,11 @@
 from app import db
 from app import login
 from flask_login import UserMixin
+#todo auto increment and group and student fk
 
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-
-def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
 
 
 class Faculty_member(UserMixin,db.Model):
@@ -23,9 +18,15 @@ class Faculty_member(UserMixin,db.Model):
     authorize = db.Column(db.Boolean, default=False)
     studentCount = db.Column(db.Boolean, default=False)
 
-    postedPropsal = db.relationship('Propsal', backref='Faculty_member', lazy=True)
-    postedStudentReport = db.relationship('Individual_report', backref='Faculty_member', lazy=True)
-    postedGroupReport =  db.relationship('Group_report', backref='Faculty_member', lazy=True)
+    postedPropsal = db.relationship('Propsal', backref='faculty_member', lazy=True)
+    postedStudentReport = db.relationship('Individual_report', backref='faculty_member', lazy=True)
+    postedGroupReport =  db.relationship('Group_report', backref='faculty_member', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+            return check_password_hash(self.password_hash, password)
 
 
     def __repr__(self):
@@ -38,9 +39,14 @@ class Student(UserMixin,db.Model):
     password_hash = db.Column(db.String(128))
     gpa = db.Column(db.Float , nullable=False)
 
-    studentReport = db.relationship('Individual_report', backref='Student', lazy=True)
+    studentReport = db.relationship('Individual_report', backref='student', lazy=True)
+    member = db.Column(db.Integer, db.ForeignKey('group.id'))
 
-    member = db.Column(db.Integer, db.ForeignKey('student.id'))
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+            return check_password_hash(self.password_hash, password)
 
    
     def __repr__(self):
@@ -50,6 +56,7 @@ class Propsal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64), index=True, unique=True, nullable=False)
     desc = db.Column(db.String(2064), index=True, unique=True, nullable=False)
+    published = db.Column(db.Boolean, default=False)
 
     fId = db.Column(db.Integer, db.ForeignKey('faculty_member.id')) 
     gId = db.Column(db.Integer, db.ForeignKey('group.id')) 
@@ -63,8 +70,7 @@ class Group(db.Model):
     gpa = db.Column(db.Float)
     code = db.Column(db.Integer, nullable=False)
 
-    owner = db.Column(db.Integer, db.ForeignKey('student.id')) 
-    member = db.relationship('Student', backref='group', lazy=True) 
+    sId = db.relationship('Student', backref='group', lazy=True) 
     ownedPropsal = db.relationship('Propsal', backref='group', lazy=True) 
     groupReport = db.relationship('Group_report', backref='group', lazy=True)
     

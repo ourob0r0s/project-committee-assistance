@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Sign In</h1>
+<h2 class="d-flex aligns-items-center justify-content-center">Sign in</h2>
+<div class="d-flex aligns-items-center justify-content-center">
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
@@ -21,4 +22,5 @@
         <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
         <p>{{ form.submit() }}</p>
     </form>
+</div>
 {% endblock %}

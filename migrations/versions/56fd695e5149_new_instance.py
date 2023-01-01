@@ -1,8 +1,8 @@
-"""empty message
+"""new instance
 
-Revision ID: c99dc9f01898
+Revision ID: 56fd695e5149
 Revises: 
-Create Date: 2022-12-29 16:28:20.250385
+Create Date: 2023-01-02 02:06:43.270431
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c99dc9f01898'
+revision = '56fd695e5149'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,6 +33,12 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_faculty_member_email'), ['email'], unique=True)
         batch_op.create_index(batch_op.f('ix_faculty_member_username'), ['username'], unique=True)
 
+    op.create_table('group',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('gpa', sa.Float(), nullable=True),
+    sa.Column('code', sa.Integer(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('student',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=64), nullable=False),
@@ -47,12 +53,13 @@ def upgrade():
         batch_op.create_index(batch_op.f('ix_student_email'), ['email'], unique=True)
         batch_op.create_index(batch_op.f('ix_student_username'), ['username'], unique=True)
 
-    op.create_table('group',
+    op.create_table('group_report',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('gpa', sa.Float(), nullable=True),
-    sa.Column('code', sa.Integer(), nullable=False),
-    sa.Column('owner', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['owner'], ['student.id'], ),
+    sa.Column('score', sa.Integer(), nullable=False),
+    sa.Column('fId', sa.Integer(), nullable=True),
+    sa.Column('gId', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['fId'], ['faculty_member.id'], ),
+    sa.ForeignKeyConstraint(['gId'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('individual_report',
@@ -64,19 +71,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['sId'], ['student.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('group_report',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('score', sa.Integer(), nullable=False),
-    sa.Column('fId', sa.Integer(), nullable=True),
-    sa.Column('gId', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['fId'], ['faculty_member.id'], ),
-    sa.ForeignKeyConstraint(['gId'], ['group.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
     op.create_table('propsal',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=64), nullable=False),
     sa.Column('desc', sa.String(length=2064), nullable=False),
+    sa.Column('published', sa.Boolean(), nullable=True),
     sa.Column('fId', sa.Integer(), nullable=True),
     sa.Column('gId', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['fId'], ['faculty_member.id'], ),
@@ -97,14 +96,14 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_propsal_desc'))
 
     op.drop_table('propsal')
-    op.drop_table('group_report')
     op.drop_table('individual_report')
-    op.drop_table('group')
+    op.drop_table('group_report')
     with op.batch_alter_table('student', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_student_username'))
         batch_op.drop_index(batch_op.f('ix_student_email'))
 
     op.drop_table('student')
+    op.drop_table('group')
     with op.batch_alter_table('faculty_member', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_faculty_member_username'))
         batch_op.drop_index(batch_op.f('ix_faculty_member_email'))
