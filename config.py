@@ -1,5 +1,3 @@
- (7 sloc)  323 Bytes
-
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
