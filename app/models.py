@@ -1,11 +1,14 @@
-from app import db
-from app import login
+from app import db, login
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 #todo auto increment and group and student fk
 
 @login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+def load_faculty(id):
+    return Faculty_member.query.get(int(id))
+
+
+
 
 
 class Faculty_member(UserMixin,db.Model):
@@ -53,7 +56,7 @@ class Student(UserMixin,db.Model):
         return '<Student {}>'.format(self.id)
 
 class Propsal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,)
     title = db.Column(db.String(64), index=True, unique=True, nullable=False)
     desc = db.Column(db.String(2064), index=True, unique=True, nullable=False)
     published = db.Column(db.Boolean, default=False)
@@ -81,6 +84,7 @@ class Group(db.Model):
 class Individual_report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     score = db.Column(db.Integer, nullable=False)
+    
     fId = db.Column(db.Integer, db.ForeignKey('faculty_member.id'))
     sId = db.Column(db.Integer, db.ForeignKey('student.id'))
     

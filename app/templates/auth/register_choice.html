@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="d-flex aligns-items-center justify-content-center">Faculty or Student</h2>
+<div class="d-flex aligns-items-center justify-content-center">
+    <div class="forms">
+        <a href="{{ url_for('facultyRegister') }}"><img style="width: 250px; height: 280px" src="https://www.freeiconspng.com/thumbs/teachers-icon/teachers-icon-8.png" /></a>
+        <a href="{{ url_for('studentRegister') }}"><img style="width: 180px; height: 260px" src="https://static.thenounproject.com/png/1244647-200.png" /></a>
+    </div>
+</div>
+{% endblock %}

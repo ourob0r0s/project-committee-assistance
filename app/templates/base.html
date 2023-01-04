@@ -33,10 +33,10 @@
                   <span class="d-flex">
                   {% if current_user.is_anonymous %}
                   <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('login') }}" >Login</a>
+                    <a class="nav-link" href="{{ url_for('loginChoice') }}" >Login</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('register') }}" >Register</a>
+                    <a class="nav-link" href="{{ url_for('registerChoice') }}" >Register</a>
                   </li>
                   {% else %}
                   <li class="nav-item">
