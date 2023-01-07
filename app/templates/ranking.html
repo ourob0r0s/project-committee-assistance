@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <title>Transfer Rows Between Two HTML Table</title>
+    <meta charset="windows-1252">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <style>
+            table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            }
+            table.center {
+            margin-left: auto; 
+            margin-right: auto;
+            }
+        
+        .container{overflow: hidden}
+        .tab{float: left}
+        .tab-btn{margin: 50px;}
+        button{display:block;margin-bottom: 20px;}
+        tr{transition:all .25s ease-in-out}
+        tr:hover{background-color: #ddd;}
+        
+    </style>    
+</head>
+<body>
+    
+    <div class="container">
+        
+        <div class="tab">
+            <table class ="center" id="table1" border="1" >
+                <tr>
+                    <th>Proposal Number</th>
+                    <th>Proposal Title</th>
+                    <th>Supervisor Name</th>
+                    <th>Select</th>
+                </tr>
+                {%for row in data%}
+                <tr>
+                    {%for cell in row%}   
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                    <td><input type="radio" name="check-tab1"></td>
+                </tr>
+                {% endfor %}
+                 
+            </table>
+        </div>
+        
+        <div class="tab tab-btn">
+            <button onclick="tab1_To_tab2();">>>>>></button>
+            <button onclick="tab2_To_tab1();"><<<<<</button>
+        </div>
+        
+        <div class="tab">
+            <table class ="center" id="table2" border="1">
+                <tr>
+                    <th>Proposal Number</th>
+                    <th>Proposal Title</th>
+                    <th>Supervisor Name</th>
+                    <th>Select</th>
+                </tr>
+            </table>   
+        </div>
+
+
+    </div>
+    
+    <script>
+        
+        function tab1_To_tab2()
+        {
+
+            var table1 = document.getElementById("table1"),
+                table2 = document.getElementById("table2"),
+                radioes = document.getElementsByName("check-tab1");
+        console.log("Val1 = " + radioes.length);
+             for(var i = 0; i < radioes.length; i++)
+                 if(radioes[i].checked)
+                    {
+                        // create new row and cells
+                        var newRow = table2.insertRow(table2.length),
+                            cell1 = newRow.insertCell(0),
+                            cell2 = newRow.insertCell(1),
+                            cell3 = newRow.insertCell(2),
+                            cell4 = newRow.insertCell(3);
+                        // add values to the cells
+                        cell1.innerHTML = table1.rows[i+1].cells[0].innerHTML;
+                        cell2.innerHTML = table1.rows[i+1].cells[1].innerHTML;
+                        cell3.innerHTML = table1.rows[i+1].cells[2].innerHTML;
+                        cell4.innerHTML = "<input type='radio' name='check-tab2'>";
+                       
+                        // remove the transfered rows from the first table [table1]
+                        var index = table1.rows[i+1].rowIndex;
+                        table1.deleteRow(index);
+                        // we have deleted some rows so the radioes.length have changed
+                        // so we have to decrement the value of i
+                        i--;
+                       console.log(radioes.length);
+                    }
+        }
+        
+        
+        function tab2_To_tab1()
+        {
+            var table1 = document.getElementById("table1"),
+                table2 = document.getElementById("table2"),
+                radioes = document.getElementsByName("check-tab2");
+        console.log("Val1 = " + radioes.length);
+             for(var i = 0; i < radioes.length; i++)
+                 if(radioes[i].checked)
+                    {
+                        // create new row and cells
+                        var newRow = table1.insertRow(table1.length),
+                            cell1 = newRow.insertCell(0),
+                            cell2 = newRow.insertCell(1),
+                            cell3 = newRow.insertCell(2),
+                            cell4 = newRow.insertCell(3);
+                        // add values to the cells
+                        cell1.innerHTML = table2.rows[i+1].cells[0].innerHTML;
+                        cell2.innerHTML = table2.rows[i+1].cells[1].innerHTML;
+                        cell3.innerHTML = table2.rows[i+1].cells[2].innerHTML;
+                        cell4.innerHTML = "<input type='radio' name='check-tab1'>";
+                       
+                        // remove the transfered rows from the second table [table2]
+                        var index = table2.rows[i+1].rowIndex;
+                        table2.deleteRow(index);
+                        // we have deleted some rows so the radioes.length have changed
+                        // so we have to decrement the value of i
+                        i--;
+                       console.log(radioes.length);
+                    }
+        }
+        
+    </script>    
+    
+</body>
+{% endblock %}
+   
