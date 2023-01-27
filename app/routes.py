@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import studentLoginForm,facultyLoginForm, facultyRegisterForm,studentRegisterForm
-from app.models import Faculty_member,Student,Propsal,Group,Individual_report,Group_report
+from app.models import User,Faculty_member,Student,Proposal,Group,Individual_report,Group_report
 
 
 
@@ -90,6 +90,8 @@ def facultyRegister():
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('facultyLogin'))
     return render_template('auth/faculty_register.html', title='Register', form=form)
+
+
 
 
 

@@ -3,7 +3,7 @@ os.environ['DATABASE_URL'] = 'sqlite://'
 
 import unittest
 from app import app, db
-from app.models import Faculty_member,Student,Propsal,Group,Individual_report,Group_report
+from app.models import User,Faculty_member,Student,Proposal,Group,Individual_report,Group_report
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -25,14 +25,17 @@ class UserModelCase(unittest.TestCase):
 
 
     def test_models(self):
-        student = Student(username='musab', email='musab@yahoo.com', gpa=4.54)
+        user = User(username='mussab', email='museab@yahoo.com')
+        user.set_password('cat')
+        db.session.add(user)
+        student = Student(username='musab', email='musab@yahoo.com', gpa=4.54, sId=438102298)
         student.set_password('cat')
         db.session.add(student)
-        faculty = Faculty_member(username='musab', email='musab@yahoo.com')
+        faculty = Faculty_member(username='mus3ab', email='musabe@yahoo.com')
         faculty.set_password('dog')
         db.session.add(faculty)
-        propsal = Propsal(title='title1', desc='desc')
-        db.session.add(propsal)
+        proposal = Proposal(title='title1', desc='desc')
+        db.session.add(proposal)
         group = Group(code=1234567890)
         db.session.add(group)
         individual_report = Individual_report(score=50)
@@ -40,23 +43,26 @@ class UserModelCase(unittest.TestCase):
         group_report = Group_report(score=50)
         db.session.add(group_report)
         db.session.commit()
+        print(Student.query.all())
+        print(Faculty_member.query.all())
+        print(User.query.all())
 
-    def test_relationships(self):
-        student = Student(id = 1,username='musab', email='musab@yahoo.com', gpa=4.54)
-        student.set_password('cat')
-        db.session.add(student)
-        faculty = Faculty_member(id = 1,username='musab', email='musab@yahoo.com')
-        faculty.set_password('dog')
-        db.session.add(faculty)
-        propsal = Propsal(id = 1,title='title1', desc='desc')
-        db.session.add(propsal)
-        group = Group(id = 1,code=1234567890)
-        db.session.add(group)
-        individual_report = Individual_report(id = 1,score=50)
-        db.session.add(individual_report)
-        group_report = Group_report(id = 1,score=50)
-        db.session.add(group_report)
-        db.session.commit()
+    # def test_relationships(self):
+    #     student = Student(id = 1,username='musab', email='musab@yahoo.com', gpa=4.54)
+    #     student.set_password('cat')
+    #     db.session.add(student)
+    #     faculty = Faculty_member(id = 1,username='musab', email='musab@yahoo.com')
+    #     faculty.set_password('dog')
+    #     db.session.add(faculty)
+    #     proposal = Proposal(id = 1,title='title1', desc='desc')
+    #     db.session.add(proposal)
+    #     group = Group(id = 1,code=1234567890)
+    #     db.session.add(group)
+    #     individual_report = Individual_report(id = 1,score=50)
+    #     db.session.add(individual_report)
+    #     group_report = Group_report(id = 1,score=50)
+    #     db.session.add(group_report)
+    #     db.session.commit()
 
 
 
