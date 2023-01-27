@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import studentLoginForm,facultyLoginForm, facultyRegisterForm,studentRegisterForm
-from app.models import User,Faculty_member,Student,Proposal,Group,Individual_report,Group_report
+from app.models import User,Proposal,Group,Individual_report,Group_report
 
 
 
@@ -28,11 +28,11 @@ def studentLogin():
         return redirect(url_for('index'))
     form = studentLoginForm()
     if form.validate_on_submit():
-        student = Student.query.filter_by(id=form.id.data).first()
-        if student is None or not student.check_password(form.password.data):
-            flash('Invalid id or password')
+        user = User.query.filter_by(sId=form.sId.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
             return redirect(url_for('login'))
-        login_user(student, remember=form.remember_me.data)
+        login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -45,11 +45,11 @@ def facultyLogin():
         return redirect(url_for('index'))
     form = facultyLoginForm()
     if form.validate_on_submit():
-        faculty = Faculty_member.query.filter_by(email=form.email.data).first()
-        if faculty is None or not faculty.check_password(form.password.data):
-            flash('Invalid email or password')
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
             return redirect(url_for('facultyLogin'))
-        login_user(faculty, remember=form.remember_me.data)
+        login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -69,9 +69,9 @@ def studentRegister():
         return redirect(url_for('index'))
     form = studentRegisterForm()
     if form.validate_on_submit():
-        student = Student(username=form.username.data, email=(form.id.data+"@student.ksu.edu.sa"), id=form.id.data, gpa=form.gpa.data)
-        student.set_password(form.password.data)
-        db.session.add(student)
+        user = User(username=form.username.data, email=(form.id.data+"@student.ksu.edu.sa"), id=form.id.data, gpa=form.gpa.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('auth/student_login'))
@@ -83,9 +83,9 @@ def facultyRegister():
         return redirect(url_for('index'))
     form = facultyRegisterForm()
     if form.validate_on_submit():
-        faculty = Faculty_member(username=form.username.data, email=form.email.data)
-        faculty.set_password(form.password.data)
-        db.session.add(faculty)
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('facultyLogin'))

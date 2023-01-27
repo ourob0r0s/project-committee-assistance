@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-from app.models import User,Faculty_member,Student
+from app.models import User
 
 class facultyLoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -24,15 +24,13 @@ class facultyRegisterForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        faculty_member = Faculty_member.query.filter_by(username=username.data).first()
-        student = Student.query.filter_by(username=username.data).first()
-        if faculty_member or student is not None:
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
             raise ValidationError('Please use a different username.')
 
     def validate_email(self, email):
-        faculty_member = Faculty_member.query.filter_by(email=email.data).first()
-        student = Student.query.filter_by(email=email.data).first()
-        if faculty_member or student is not None:
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
             raise ValidationError('Please use a different email address.')
     
 class studentRegisterForm(FlaskForm):
@@ -45,12 +43,11 @@ class studentRegisterForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        faculty_member = Faculty_member.query.filter_by(username=username.data).first()
-        student = Student.query.filter_by(username=username.data).first()
-        if faculty_member or student is not None:
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
             raise ValidationError('Please use a different username.')
 
-    def validate_email(self, id):
-        student = Student.query.filter_by(id=id.data).first()
-        if student is not None:
+    def validate_email(self, sId):
+        user = User.query.filter_by(id=id.data).first()
+        if user is not None:
             raise ValidationError('Please use a different student id.')

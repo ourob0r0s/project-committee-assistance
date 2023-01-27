@@ -9,48 +9,37 @@ def load_user(id):
     return User.query.get(int(id))
 
 
+
 class User(UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def _repr_(self):
-        return '<User {}>'.format(self.username)
-
-
-
-class Faculty_member(User,db.Model):
     publish = db.Column(db.Boolean, default=False)
     deadline = db.Column(db.Boolean, default=False)
     authorize = db.Column(db.Boolean, default=False)
     studentCount = db.Column(db.Boolean, default=False)
 
-    postedProposal = db.relationship('Proposal', backref='faculty_member', lazy=True)
-    # postedStudentReport = db.relationship('Individual_report', backref='faculty_member', lazy=True)
-    # postedGroupReport =  db.relationship('Group_report', backref='faculty_member', lazy=True)
-
-
-    def _repr_(self):
-        return '<Faculty member {}>'.format(self.username)
-
-class Student(User,db.Model):
     sId = db.Column(db.Integer)
     gpa = db.Column(db.Float)
 
     # studentReport = db.relationship('Individual_report', backref='student', lazy=True)
     member = db.Column(db.Integer, db.ForeignKey('group.id'))
 
-   
-    def _repr_(self):
-        return '<Student {}>'.format(self.id)
+    postedProposal = db.relationship('Proposal', backref='user', lazy=True)
+    # postedStudentReport = db.relationship('Individual_report', backref='faculty_member', lazy=True)
+    # postedGroupReport =  db.relationship('Group_report', backref='faculty_member', lazy=True)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return '<User {}>'.format(self.username)
+
+
 
 class Proposal(db.Model):
     id = db.Column(db.Integer, primary_key=True,)
@@ -65,19 +54,23 @@ class Proposal(db.Model):
     def _repr_(self):
         return '<Proposal {}>'.format(self.title)
 
+
+
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gpa = db.Column(db.Float)
     code = db.Column(db.Integer, nullable=False)
     ownerId = db.Column(db.Integer)
 
-    sId = db.relationship('Student', backref='group', lazy=True) 
+    sId = db.relationship('User', backref='group', lazy=True) 
     ownedProposal = db.relationship('Proposal', backref='group', lazy=True) 
     # groupReport = db.relationship('Group_report', backref='group', lazy=True)
     
 
     def _repr_(self):
         return '<Group {}>'.format(self.id)
+
+
 
 class Individual_report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -89,6 +82,8 @@ class Individual_report(db.Model):
 
     def _repr_(self):
         return '<Individual_report {}>'.format(self.id)
+
+
 
 class Group_report(db.Model):
     id = db.Column(db.Integer, primary_key=True)

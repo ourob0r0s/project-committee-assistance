@@ -3,7 +3,7 @@ os.environ['DATABASE_URL'] = 'sqlite://'
 
 import unittest
 from app import app, db
-from app.models import User,Faculty_member,Student,Proposal,Group,Individual_report,Group_report
+from app.models import User,Proposal,Group,Individual_report,Group_report
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -17,7 +17,7 @@ class UserModelCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_password_hashing(self):
-        u = Faculty_member(username='susan')
+        u = User(username='susan')
         u.set_password('cat')
         self.assertFalse(u.check_password('dog'))
         self.assertTrue(u.check_password('cat'))
@@ -28,12 +28,6 @@ class UserModelCase(unittest.TestCase):
         user = User(username='mussab', email='museab@yahoo.com')
         user.set_password('cat')
         db.session.add(user)
-        student = Student(username='musab', email='musab@yahoo.com', gpa=4.54, sId=438102298)
-        student.set_password('cat')
-        db.session.add(student)
-        faculty = Faculty_member(username='mus3ab', email='musabe@yahoo.com')
-        faculty.set_password('dog')
-        db.session.add(faculty)
         proposal = Proposal(title='title1', desc='desc')
         db.session.add(proposal)
         group = Group(code=1234567890)
@@ -43,8 +37,6 @@ class UserModelCase(unittest.TestCase):
         group_report = Group_report(score=50)
         db.session.add(group_report)
         db.session.commit()
-        print(Student.query.all())
-        print(Faculty_member.query.all())
         print(User.query.all())
 
     # def test_relationships(self):
