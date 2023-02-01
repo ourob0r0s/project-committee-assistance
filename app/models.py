@@ -59,7 +59,7 @@ class Proposal(db.Model):
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gpa = db.Column(db.Float)
-    code = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(20), nullable=False, unique=True)
     ownerId = db.Column(db.Integer)
 
     sId = db.relationship('User', backref='group', lazy=True) 
