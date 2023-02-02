@@ -3,7 +3,7 @@ os.environ['DATABASE_URL'] = 'sqlite://'
 
 import unittest
 from app import app, db
-from app.models import User,Proposal,Group,Individual_report,Group_report
+from app.models import User,Proposal,Group
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -30,13 +30,8 @@ class UserModelCase(unittest.TestCase):
         db.session.add(user)
         proposal = Proposal(title='title1', desc='desc')
         db.session.add(proposal)
-        group = Group(code=1234567890)
+        group = Group(name="cold")
         db.session.add(group)
-        individual_report = Individual_report(score=50)
-        db.session.add(individual_report)
-        group_report = Group_report(score=50)
-        db.session.add(group_report)
-        db.session.commit()
         print(User.query.all())
 
     # def test_relationships(self):

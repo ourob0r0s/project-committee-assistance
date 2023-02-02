@@ -3,9 +3,9 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import studentLoginForm,facultyLoginForm, facultyRegisterForm,studentRegisterForm,proposalAdd,groupAdd
-from app.models import User,Proposal,Group,Individual_report,Group_report
-#todo titles
-
+from app.models import User,Proposal,Group
+from app.decorators import isFaculty, isAdmin, isStudent, isLeader
+#todo titles, decorators
 
 @app.route('/')
 @app.route('/index')
@@ -30,9 +30,10 @@ def studentLogin():
     if form.validate_on_submit():
         user = User.query.filter_by(sId=form.sId.data).first()
         if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
+            flash('Incorrect id or password','danger')
             return redirect(url_for('studentLogin'))
         login_user(user, remember=form.remember_me.data)
+        userNow = user
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -47,9 +48,10 @@ def facultyLogin():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
+            flash('Incorrect email or password','danger')
             return redirect(url_for('facultyLogin'))
         login_user(user, remember=form.remember_me.data)
+        userNow = user
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -69,11 +71,11 @@ def studentRegister():
         return redirect(url_for('index'))
     form = studentRegisterForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=(str(form.sId.data)+"@student.ksu.edu.sa"), sId=form.sId.data, gpa=form.gpa.data)
+        user = User(username=form.username.data, email=(str(form.sId.data)+"@student.ksu.edu.sa"), sId=form.sId.data, gpa=form.gpa.data, student = True)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a registered user!')
+        flash('Congratulations, you are now a registered user!','success')
         return redirect(url_for('studentLogin'))
     return render_template('auth/student_register.html', title='Register', form=form)
 
@@ -83,11 +85,11 @@ def facultyRegister():
         return redirect(url_for('index'))
     form = facultyRegisterForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(username=form.username.data, email=form.email.data, faculty = True)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a registered user!')
+        flash('Congratulations, you are now a registered user!','success')
         return redirect(url_for('facultyLogin'))
     return render_template('auth/faculty_register.html', title='Register', form=form)
 
@@ -98,14 +100,17 @@ def proposal():
     
     return render_template("proposal.html", title='Home Page', proposals=proposals)
 
+
 @app.route('/add_proposal', methods=['GET', 'POST'])
+@login_required
+@isFaculty()
 def addProposal():
     form = proposalAdd()
     if form.validate_on_submit():
         prop = Proposal(title= form.title.data, desc=form.desc.data)
         db.session.add(prop)
         db.session.commit()
-        flash('Congratulations, you are now a registered user!')
+        flash('Congratulations, your proposal has been added!','success')
         return redirect(url_for('proposal'))
     return render_template("add_proposal.html", title='Home Page', form=form)
 
@@ -121,7 +126,7 @@ def deleteProposal(id):
 			db.session.commit()
 
 			# Return a message
-			flash("proposal Was Deleted!")
+			flash("proposal Was Deleted!",'info')
 
 			# Grab all the posts from the database
 			proposals = Proposal.query.filter_by()
@@ -130,7 +135,7 @@ def deleteProposal(id):
 
 	except:
 			# Return an error message
-			flash("Whoops! There was a problem deleting proposal, try again...")
+			flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
 
 			# Grab all the posts from the database
 			proposals = Proposal.query.filter_by()
@@ -163,7 +168,7 @@ def addGroup():
         group = Group(name=form.name.data)
         db.session.add(group)
         db.session.commit()
-        flash('Congratulations, you are created a group!')
+        flash('Congratulations, you are created a group!', 'success')
         return redirect(url_for('group'))
     return render_template("add_group.html", title='Home Page', form=form)
 
