@@ -27,7 +27,11 @@ class User(UserMixin,db.Model):
 
     member = db.Column(db.Integer, db.ForeignKey('group.id'))
 
-    pId = db.relationship('Proposal', backref='user', lazy=True)
+    author = db.relationship('Proposal', backref='user', lazy=True)
+    
+    def set_author(self, proposal):
+        self.author = proposal
+        db.session.commit()
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -48,8 +52,8 @@ class Proposal(db.Model):
     owned = db.Column(db.Boolean, default=False)
 
 
-    fId = db.Column(db.Integer, db.ForeignKey('user.id')) 
-    gId = db.Column(db.Integer, db.ForeignKey('group.id')) 
+    author = db.Column(db.Integer, db.ForeignKey('user.id')) 
+    holder = db.Column(db.Integer, db.ForeignKey('group.id')) 
     
 
     def __repr__(self):
@@ -64,9 +68,13 @@ class Group(db.Model):
     score = db.Column(db.Integer)
 
 
-    sId = db.relationship('User', backref='group', lazy=True) 
-    pId = db.relationship('Proposal', backref='group', lazy=True) 
+    member = db.relationship('User', backref='group', lazy=True) 
+    holder = db.relationship('Proposal', backref='group', lazy=True) 
     
 
+    def set_member(self, user):
+        self.member = user
+        db.session.commit()
+    
     def __repr__(self):
         return '<Group {}>'.format(self.name)
