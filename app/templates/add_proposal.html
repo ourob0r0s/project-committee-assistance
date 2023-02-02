@@ -6,21 +6,25 @@
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.sId.label }}<br>
-            {{ form.sId(size=9) }}<br>
-            {% for error in form.sId.errors %}
+            <div class="form-group" >
+            {{ form.title.label }}<br>
+            {{ form.title(class_="form-control",size=64) }}
+            </div>
+            {% for error in form.title.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}<br>
-            {% for error in form.password.errors %}
+            <div class="form-group" >
+            {{ form.desc.label }}<br>
+            {{ form.desc(class_="form-control", size=128) }}
+            </div>
+            {% for error in form.desc.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
-        <p>{{ form.submit() }}</p>
+        <br>
+        <p>{{ form.submit(class_="form-control btn btn-primary") }}</p>
     </form>
 </div>
 {% endblock %}

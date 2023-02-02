@@ -10,12 +10,12 @@
                 {{ form.username(size=32) }}<br>
                 {% for error in form.username.errors %}
                 <span style="color: red;">[{{ error }}]</span>
-                {% endfor %}
+                {% endfor %} 
             </p>
             <p>
-                {{ form.id.label }}<br>
-                {{ form.id(size=9) }}<br>
-                {% for error in form.id.errors %}
+                {{ form.sId.label }}<br>
+                {{ form.sId(size=9) }}<br>
+                {% for error in form.sId.errors %}
                 <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </p>
