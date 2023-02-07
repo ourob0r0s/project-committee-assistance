@@ -47,14 +47,14 @@ class User(UserMixin,db.Model):
 class Proposal(db.Model):
     id = db.Column(db.Integer, primary_key=True,)
     title = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    desc = db.Column(db.String(2064), index=True, unique=True, nullable=False)
+    desc = db.Column(db.String(2064), index=True, nullable=False)
     published = db.Column(db.Boolean, default=False)
     owned = db.Column(db.Boolean, default=False)
 
 
     author = db.Column(db.Integer, db.ForeignKey('user.id')) 
     holder = db.Column(db.Integer, db.ForeignKey('group.id')) 
-    
+
 
     def __repr__(self):
         return '<Proposal {}>'.format(self.title)
@@ -68,7 +68,7 @@ class Group(db.Model):
     score = db.Column(db.Integer)
 
 
-    member = db.relationship('User', backref='group', lazy=True) 
+    members = db.relationship('User', backref='group', lazy=True) 
     holder = db.relationship('Proposal', backref='group', lazy=True) 
     
 

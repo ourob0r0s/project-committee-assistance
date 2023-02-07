@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="d-flex aligns-items-center justify-content-center header" style= "margin-top: 3%;">your group name is {{group.name}}</h1>
+<br>
+<br>
+
+
+<div class="text-center" style="margin-left : 25% ;width: 50%;">
+<table class="table d-table table-dark table-striped">
+    <thead>
+        <tr>
+
+        <th scope="col">id</th>
+        <th scope="col">name</th>
+        {% if current_user.leader %}
+        <th scope="col"></th>
+        {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in group.members %}
+        <tr>
+            <td>{{ member.sId }}</td>
+            <td>{{ member.username }}</td>
+            <td>{% if current_user.leader and current_user.id != member.id %}
+            <a href="{{ url_for('removeMember', id=member.id)}}" class="btn btn-outline-danger btn-sm">remove</a>
+            {% endif %} 
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<br>
+
+    {% if current_user.leader %}
+    <div class="text-center" style="margin-top: 250px;"> <a href="{{ url_for('deleteGroup', id=group.id)}}" class="btn btn-outline-danger btn-lg" style="margin-bottom: 10px ;">Delete group</a> </div>
+    {% endif %}
+    </div>
+{% endblock %}

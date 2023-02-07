@@ -1,18 +1,36 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField, TextAreaField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
-from app.models import User
+from app.models import User, Group, Proposal
 #todo vaildators, message
+
+class groupJoin(FlaskForm):
+    name = StringField('name', validators=[DataRequired(), Length(min= 3, max= 20, message ="")])
+    submit = SubmitField('Join')
+
+    def validate_name(self, name):
+        group = Group.query.filter_by(name=name.data).first()
+        if group is None:
+            raise ValidationError('Please check if the name is correct.')
 
 class groupAdd(FlaskForm):
     name = StringField('name', validators=[DataRequired(), Length(min= 3, max= 20, message ="")])
-    submit = SubmitField('create group')
+    submit = SubmitField('Create')
+
+    def validate_name(self, name):
+        group = Group.query.filter_by(name=name.data).first()
+        if group is not None:
+            raise ValidationError('Please use a different name.')
 
 class proposalAdd(FlaskForm):
     title = StringField('title', validators=[DataRequired(), Length(min= 4, max= 20, message ="")])
     desc = TextAreaField('description', validators=[DataRequired(), Length(min= 36 , message="")])
     submit = SubmitField('add proposal')
 
+    def validate_title(self, title):
+        prop = Proposal.query.filter_by(title=title.data).first()
+        if prop is not None:
+            raise ValidationError('Please use a different title.')
 
 class facultyLoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])

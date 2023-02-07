@@ -36,7 +36,7 @@ def isLeader():
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not current_user.Leader:
+            if not current_user.leader:
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function

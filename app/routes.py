@@ -2,11 +2,10 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import studentLoginForm,facultyLoginForm, facultyRegisterForm,studentRegisterForm,proposalAdd,groupAdd
-from app.models import User,Proposal,Group
+from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin
+from app.models import User, Proposal, Group
 from app.decorators import isFaculty, isAdmin, isStudent, isLeader
-#todo titles, decorators
-
+#todo prop group count
 @app.route('/')
 @app.route('/index')
 def index():
@@ -16,6 +15,7 @@ def index():
 @app.route('/login_choice', methods=['GET', 'POST'])
 def loginChoice():
     return render_template("auth/login_choice.html",title="login choice")
+
 
 @app.route('/register_choice', methods=['GET', 'POST'])
 def registerChoice():
@@ -59,7 +59,9 @@ def facultyLogin():
     return render_template('auth/faculty_login.html', title='Sign In', form=form)
 
 
+
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
@@ -79,6 +81,7 @@ def studentRegister():
         return redirect(url_for('studentLogin'))
     return render_template('auth/student_register.html', title='Register', form=form)
 
+
 @app.route('/faculty_register', methods=['GET', 'POST'])
 def facultyRegister():
     if current_user.is_authenticated:
@@ -93,12 +96,15 @@ def facultyRegister():
         return redirect(url_for('facultyLogin'))
     return render_template('auth/faculty_register.html', title='Register', form=form)
 
+
 @app.route('/proposal', methods=['GET', 'POST'])
+@login_required
+@isFaculty()
 def proposal():
 
-    proposals = Proposal.query.filter_by()
+    proposals = Proposal.query.filter_by(author = current_user.id)
     
-    return render_template("proposal.html", title='Home Page', proposals=proposals)
+    return render_template("proposal.html", title='Proposal', proposals=proposals)
 
 
 @app.route('/add_proposal', methods=['GET', 'POST'])
@@ -110,67 +116,149 @@ def addProposal():
         prop = Proposal(title= form.title.data, desc=form.desc.data)
         db.session.add(prop)
         db.session.commit()
+
+        prop = Proposal.query.filter_by(title = form.title.data).first()
+        props = current_user.author
+        props.append(prop)
+        current_user.set_author(props)
+        print(prop.author)
         flash('Congratulations, your proposal has been added!','success')
         return redirect(url_for('proposal'))
-    return render_template("add_proposal.html", title='Home Page', form=form)
+    return render_template("add_proposal.html", title='add Proposal', form=form)
 
 
 
 @app.route('/proposal/delete/<int:id>')
+@login_required
+@isFaculty()
 def deleteProposal(id):
-	proposal = Proposal.query.get_or_404(id)
-	# id = current_user.id
-	# if id == post_to_delete.poster.id or id == 14:
-	try:
-			db.session.delete(proposal)
-			db.session.commit()
+    proposal = Proposal.query.get_or_404(id)
+    id = current_user.id
+    if id == proposal.author:
+        try:
+            db.session.delete(proposal)
+            db.session.commit()
 
-			# Return a message
-			flash("proposal Was Deleted!",'info')
+            # Return a message
+            flash("proposal Was Deleted!",'info')
 
-			# Grab all the posts from the database
-			proposals = Proposal.query.filter_by()
-			return render_template("proposal.html", proposals=proposals)
+            return redirect(url_for('proposal'))
 
 
-	except:
-			# Return an error message
-			flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
+        except:
+            # Return an error message
+            flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
 
-			# Grab all the posts from the database
-			proposals = Proposal.query.filter_by()
-			return render_template("proposal.html", proposals=proposals)
-	# else:
-	# 	# Return a message
-	# 	flash("You Aren't Authorized To Delete That Proposal!")
+            return redirect(url_for('proposal'))
+    else:
+        # Return a message
+        flash("You Aren't Authorized To Delete That Proposal!", 'danger')
 
-	# 	# Grab all the posts from the database
-	# 	posts = Posts.query.order_by(Posts.date_posted)
-	# 	return render_template("posts.html", posts=posts)
-# @app.route('/StudentHome')
-# def index():
-#     return render_template("SHome.html", title='Home Page')
+        return redirect(url_for('proposal'))
 
 
-# @app.route('/AdminHome')
-# def index():
-#     return render_template("AHome.html", title='Home Page')
+
 @app.route('/group', methods=['GET', 'POST'])
+@login_required
+@isStudent()
 def group():
-    return render_template("group.html", title='Home Page')
+    if current_user.member is None:
+        return redirect(url_for('joinGroup'))
+    group = Group.query.filter_by(id = current_user.member).first()
+    members = group.members
+    return render_template("group.html", title='Group', group = group)
+
+@app.route('/join_group', methods=['GET', 'POST'])
+@login_required
+@isStudent()
+def joinGroup():
+    if current_user.member is not None:
+        return redirect(url_for('group'))
+    form = groupJoin()
+    if form.validate_on_submit():
+        group = Group.query.filter_by(name = form.name.data).first()
+        members = group.members
+        members.append(current_user)
+        group.set_member(members)
+        return redirect(url_for('group'))
+    return render_template("join_group.html", title='Join group', form=form)
 
 
 
 @app.route('/add_group', methods=['GET', 'POST'])
+@login_required
+@isStudent()
 def addGroup():
+    if current_user.member is not None:
+        return redirect(url_for('group'))
     form = groupAdd()
     if form.validate_on_submit():
         group = Group(name=form.name.data)
         db.session.add(group)
         db.session.commit()
-        flash('Congratulations, you are created a group!', 'success')
+
+        group = Group.query.filter_by(name = form.name.data).first()
+        members = group.members
+        members.append(current_user)
+        group.set_member(members)
+        current_user.leader = True
+
+        print(group.members)
+        flash('Congratulations, you have created a group!', 'success')
         return redirect(url_for('group'))
-    return render_template("add_group.html", title='Home Page', form=form)
+    return render_template("add_group.html", title='Create group', form=form)
+
+
+@app.route('/group/delete/<int:id>')
+@login_required
+@isStudent()
+@isLeader()
+def deleteGroup(id):
+    group = Group.query.get_or_404(id)
+    try:
+        db.session.delete(group)
+        current_user.leader = False
+        db.session.commit()
+
+        # Return a message
+        flash("Group Deleted!",'info')
+
+        return redirect(url_for('joinGroup'))
+
+
+    except:
+        # Return an error message
+        flash("Whoops! There was a problem deleting group, try again...", 'danger')
+
+        return redirect(url_for('group'))
 
 
 
+
+@app.route('/group/remove/<int:id>')
+@login_required
+@isStudent()
+@isLeader()
+def removeMember(id):
+    if current_user.id != id:
+        user = User.query.get_or_404(id)
+        try:
+            user.member = None
+            db.session.commit()
+
+            # Return a message
+            flash("user was removed!",'info')
+
+
+            return redirect(url_for('group'))
+
+        except:
+            # Return an error message
+            flash("Whoops! There was a problem removing member, try again...", 'danger')
+
+            return redirect(url_for('group'))
+    else:
+            # Return an error message
+        flash("Whoops! There was a problem removing member, try again...", 'danger')
+
+        return redirect(url_for('group'))

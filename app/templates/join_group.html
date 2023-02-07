@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="d-flex aligns-items-center justify-content-center" style= "margin-top: 3%;">create a group</h2>
+<h2 class="d-flex aligns-items-center justify-content-center" style= "margin-top: 3%;">join a group</h2>
 <div class="d-flex aligns-items-center justify-content-center">
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -17,5 +17,15 @@
         <br>
         <p> {{ form.submit(class_="form-control btn btn-primary") }} </p>
     </form>
+</div>
+
+<br>
+<h3 class="d-flex aligns-items-center justify-content-center">or</h3>
+<br>
+
+<div class="d-flex aligns-items-center justify-content-center">
+
+    <a href="{{ url_for('addGroup') }}" class="btn btn-outline-secondary">create group</a>
+
 </div>
 {% endblock %}
