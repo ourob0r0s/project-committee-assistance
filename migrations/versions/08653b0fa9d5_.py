@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 6e46c3e0b228
+Revision ID: 08653b0fa9d5
 Revises: 
-Create Date: 2023-02-06 20:46:39.390114
+Create Date: 2023-02-09 18:36:11.763858
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6e46c3e0b228'
+revision = '08653b0fa9d5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -58,7 +58,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('proposal', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_proposal_desc'), ['desc'], unique=True)
+        batch_op.create_index(batch_op.f('ix_proposal_desc'), ['desc'], unique=False)
         batch_op.create_index(batch_op.f('ix_proposal_title'), ['title'], unique=True)
 
     # ### end Alembic commands ###

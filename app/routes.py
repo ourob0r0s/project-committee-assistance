@@ -262,3 +262,38 @@ def removeMember(id):
         flash("Whoops! There was a problem removing member, try again...", 'danger')
 
         return redirect(url_for('group'))
+
+@app.route('/publish_proposal', methods=['GET', 'POST'])
+@login_required
+def publishProposal():
+    
+    proposals = Proposal.query.filter_by()
+    
+    return render_template("publish_proposal.html", title='Publish Proposal', proposals = proposals)
+
+
+@app.route('/publish_proposal/<int:id>', methods=['GET', 'POST'])
+@login_required
+def publishProposals(id):
+    proposal = Proposal.query.get_or_404(id)
+    
+    try:
+        if proposal.published:
+            print(1)
+            proposal.published = False
+        else:
+            print(0)
+            proposal.published = True
+            
+        db.session.commit()
+        
+        return redirect(url_for('publishProposal'))
+
+
+    except:
+        # Return an error message
+        flash("Whoops! There was a problem, try again...", 'danger')
+
+        return redirect(url_for('publishProposal'))
+    
+    
