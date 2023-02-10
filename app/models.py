@@ -75,6 +75,10 @@ class Group(db.Model):
     def set_member(self, user):
         self.member = user
         db.session.commit()
+
+    def set_proposal(self, proposal):
+        self.holder = proposal
+        db.session.commit()
     
     def __repr__(self):
         return '<Group {}>'.format(self.name)

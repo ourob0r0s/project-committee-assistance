@@ -12,7 +12,7 @@ import csv
 @app.route('/')
 @app.route('/index')
 def index():
-    current_user.faculty = True
+    current_user.leader = True
     db.session.commit()
     return render_template("index.html", title='Home Page')
 
@@ -200,13 +200,14 @@ def addGroup():
     if form.validate_on_submit():
         group = Group(name=form.name.data)
         db.session.add(group)
+        current_user.leader = True
         db.session.commit()
 
         group = Group.query.filter_by(name = form.name.data).first()
         members = group.members
         members.append(current_user)
         group.set_member(members)
-        current_user.leader = True
+        
 
         print(group.members)
         flash('Congratulations, you have created a group!', 'success')
@@ -350,14 +351,15 @@ def writefile():
         toplist += temp
         
         
-        # if len(toplist) != 11:
-        #     print("9")
-        #     flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
-        #     print("5")
+        if len(toplist) != 5:
+            print("9")
+            flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
+            print("5")
+            return ""
 
 
         print(toplist)
         with open('rankings.csv', 'a', newline='') as File:
             writer = csv.writer(File)
             writer.writerow(toplist)
-        return "wagwan g you look leng"
+        return ""
