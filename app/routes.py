@@ -349,7 +349,7 @@ def writefile():
         temp = list(rankDict.values())
         toplist += temp
         
-        flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
+        
         # if len(toplist) != 11:
         #     print("9")
         #     flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
