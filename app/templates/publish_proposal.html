@@ -10,9 +10,10 @@
     <table class="table d-table table-dark table-striped">
         <thead>
             <tr>
-    
             <th scope="col">title</th>
+            <th scope="col">description</th>
             <th scope="col"></th>
+            
             
             </tr>
         </thead>
@@ -20,16 +21,21 @@
             {% for proposal in proposals %}
             <tr>
                 <td>{{ proposal.title }}</td>
-                <td>
-                    <a href="{{ url_for('deleteProposal', id=proposal.id) }}" class="btn btn-outline-danger btn-sm" style="margin-bottom: 10px ;">Delete</a>
+                <td style="width: 30%; word-break: break-all;">{{ proposal.desc }}</td>
+                {%if not proposal.published %}
+                <td style="vertical-align: bottom;"> 
+                    <a href="{{ url_for('publishProposals', id=proposal.id) }}" class="btn btn-outline-info btn-sm" style="margin-bottom: 10px;">publish</a>
                 </td>
+                {% else %}
+                <td style="vertical-align: bottom;">
+                    <a href="{{ url_for('publishProposals', id=proposal.id) }}" class="btn btn-outline-danger btn-sm" style="margin-bottom: 10px;">unpublish</a>
+                </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
     </div>
 {% endif %}
-    <div class="d-flex aligns-items-center justify-content-center">
-        <a href="{{ url_for('addProposal')}}" class="btn btn-primary" style="font-size: 30 ;">Add</a>
-    </div>
+
 {% endblock %}

@@ -13,6 +13,7 @@ class groupJoin(FlaskForm):
         if group is None:
             raise ValidationError('Please check if the name is correct.')
 
+
 class groupAdd(FlaskForm):
     name = StringField('name', validators=[DataRequired(), Length(min= 3, max= 20, message ="")])
     submit = SubmitField('Create')
@@ -22,15 +23,12 @@ class groupAdd(FlaskForm):
         if group is not None:
             raise ValidationError('Please use a different name.')
 
+
 class proposalAdd(FlaskForm):
-    title = StringField('title', validators=[DataRequired(), Length(min= 4, max= 20, message ="")])
-    desc = TextAreaField('description', validators=[DataRequired(), Length(min= 36 , message="")])
+    title = StringField('title', validators=[DataRequired(), Length(min= 1, max= 20, message ="")])
+    desc = TextAreaField('description', validators=[DataRequired(), Length(min= 1 , message="")])
     submit = SubmitField('add proposal')
 
-    def validate_title(self, title):
-        prop = Proposal.query.filter_by(title=title.data).first()
-        if prop is not None:
-            raise ValidationError('Please use a different title.')
 
 class facultyLoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
