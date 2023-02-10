@@ -335,7 +335,20 @@ def writefile():
     if request.method == 'POST':
         rankDict = dict()
         rankDict = request.form
-        toplist = list(rankDict.values())
+        toplist = []
+        group = Group.query.filter_by(id = current_user.member).first()
+        members = group.members
+        sum = 0
+        for member in members:
+            sum += member.gpa
+        avg = sum/3
+        group.gpa = avg
+        db.session.commit()
+        toplist.append(avg)
+        toplist.append(current_user.member)
+        temp = list(rankDict.values())
+        toplist += temp
+        
         flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
         # if len(toplist) != 11:
         #     print("9")
