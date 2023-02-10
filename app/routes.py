@@ -5,10 +5,15 @@ from app import app, db
 from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin
 from app.models import User, Proposal, Group
 from app.decorators import isFaculty, isAdmin, isStudent, isLeader
+from sqlalchemy.orm import sessionmaker
+from array import *
+import csv
 #todo prop group count
 @app.route('/')
 @app.route('/index')
 def index():
+    current_user.faculty = True
+    db.session.commit()
     return render_template("index.html", title='Home Page')
 
 
@@ -297,3 +302,49 @@ def publishProposals(id):
         return redirect(url_for('publishProposal'))
     
     
+
+@app.route('/r', methods=['GET', 'POST'])
+def rank():
+
+    Session = sessionmaker(bind=db.engine)
+    session = Session()
+    proposals = session.query(Proposal)
+    Fmember = session.query(User)
+
+    Arr1 = []
+
+
+    for proposal in proposals:
+        id = proposal.id
+        title = proposal.title
+        fid = proposal.author
+        for fmember in Fmember:
+            if fmember.id == fid:
+                fName = fmember.username
+        Arr1.append(( id,title,fName))
+
+
+
+
+    return render_template('ranking.html', data=Arr1)
+
+
+@app.route('/writefile', methods=['POST'])
+def writefile():
+    print("2")
+    if request.method == 'POST':
+        rankDict = dict()
+        rankDict = request.form
+        toplist = list(rankDict.values())
+        flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
+        # if len(toplist) != 11:
+        #     print("9")
+        #     flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
+        #     print("5")
+
+
+        print(toplist)
+        with open('rankings.csv', 'a', newline='') as File:
+            writer = csv.writer(File)
+            writer.writerow(toplist)
+        return "wagwan g you look leng"

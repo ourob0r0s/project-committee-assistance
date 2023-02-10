@@ -51,7 +51,15 @@
         
         <div class="tab tab-btn">
             <button onclick="tab1_To_tab2();">>>>>></button>
+            
             <button onclick="tab2_To_tab1();"><<<<<</button>
+            
+            <button onclick="submit();">Submit</button>
+
+            
+
+            
+            
         </div>
         
         <div class="tab">
@@ -67,8 +75,65 @@
 
 
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.3.js"> </script>
     
     <script>
+
+
+
+
+        function submit()
+        {
+            let arr2 = []
+            var table2 = document.getElementById("table2")
+            radioes = document.getElementsByName("check-tab2");
+            console.log("Val1 = " + radioes.length);
+            arr2.push("group");
+            for(var i = 0; i < radioes.length; i++)
+            
+                arr2.push(table2.rows[i+1].cells[0].innerHTML);
+                i--;
+
+
+            const rDict = {
+            groupId: arr2[0],
+            P1: arr2[1],
+            P2: arr2[2],
+            P3: arr2[3],
+            P4: arr2[4],
+            P5: arr2[5],
+            P6: arr2[6],
+            P7: arr2[7],
+            P8: arr2[8],
+            P9: arr2[9],
+            P10: arr2[10],
+            };
+
+            $.ajax({
+            type: "POST",
+            url: '/writefile',
+            data: rDict
+            })
+
+            
+            
+        }
+
+        function submit222()
+        {
+            $.ajax({
+            type: "POST",
+            url: '/writefile',
+            data: {"group" : "arr2"}
+            
+        })
+        window.alert(2);
+
+        }
+
+
+        
         
         function tab1_To_tab2()
         {
