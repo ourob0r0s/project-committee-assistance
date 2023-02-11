@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 
-{% block navelem %}
-
-
-{% endblock %}
-
 {% block content %}
+<h2 class="d-flex aligns-items-center justify-content-center" style= "margin-top: 3%;">Deadline</h2>
+<br>
+<br>
 
+<div class="center" style="text-align: center;">
+    <h3>proposal must be submitted before <mark>{{ dateProposal }}</mark></h3>
+    <br>
+    <h3>ranking must be submitted before <mark>{{ dateRank }}</mark></h3>
+</div>
 {% endblock %}
 
 

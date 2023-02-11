@@ -2,18 +2,28 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin
+from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin, deadlineSet
 from app.models import User, Proposal, Group
 from app.decorators import isFaculty, isAdmin, isStudent, isLeader
 from sqlalchemy.orm import sessionmaker
 from array import *
 import csv
-#todo prop group count
+from datetime import date, timedelta
+
+global dateProposal 
+global dateRank 
+# dateProposal = date.today() - timedelta(1)
+# dateRank = date.today() - timedelta(1)
+dateProposal = 'not decided yet'
+dateRank = 'not decided yet'
+
 @app.route('/')
 @app.route('/index')
 def index():
-    
-    return render_template("index.html", title='Home Page')
+    global dateProposal
+    global dateRank
+    current_user.admin = True
+    return render_template("index.html", title='Home Page', dateProposal = dateProposal, dateRank = dateRank)
 
 
 @app.route('/login_choice', methods=['GET', 'POST'])
@@ -37,7 +47,6 @@ def studentLogin():
             flash('Incorrect id or password','danger')
             return redirect(url_for('studentLogin'))
         login_user(user, remember=form.remember_me.data)
-        userNow = user
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -55,7 +64,6 @@ def facultyLogin():
             flash('Incorrect email or password','danger')
             return redirect(url_for('facultyLogin'))
         login_user(user, remember=form.remember_me.data)
-        userNow = user
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -101,6 +109,22 @@ def facultyRegister():
     return render_template('auth/faculty_register.html', title='Register', form=form)
 
 
+@app.route('/deadline', methods=['GET', 'POST'])
+# @login_required
+# @isAdmin()
+def deadline():
+    form = deadlineSet()
+    if form.validate_on_submit():
+        global dateProposal
+        global dateRank
+        dateProposal = form.dateProposal.data
+        dateRank = form.dateRank.data
+        print(dateRank)
+        flash('deadline has been submitted!','success')
+        return redirect(url_for('index'))
+                
+    return render_template("deadline.html", title='deadline', form=form)
+
 @app.route('/proposal', methods=['GET', 'POST'])
 # @login_required
 # @isFaculty()
@@ -130,6 +154,11 @@ def viewProposal():
 # @isFaculty()
 def addProposal():
     form = proposalAdd()
+    if not isinstance(dateProposal, str):
+        if dateProposal < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('proposal'))
+
     count = Proposal.query.filter_by(author = current_user.id).count()
     if count > 1:
         flash('cant add more than 2 proposals!','danger')
@@ -152,6 +181,10 @@ def addProposal():
 # @login_required
 # @isFaculty()
 def deleteProposal(id):
+    if not isinstance(dateProposal, str):
+        if dateProposal < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('proposal'))
     proposal = Proposal.query.get_or_404(id)
     id = current_user.id
     if id == proposal.author:
@@ -194,7 +227,12 @@ def group():
 def joinGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
+    
     form = groupJoin()
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     if form.validate_on_submit():
         group = Group.query.filter_by(name = form.name.data).first()
         members = group.members
@@ -215,8 +253,12 @@ def addGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
     form = groupAdd()
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     if form.validate_on_submit():
-        group = Group(name=form.name.data)
+        group = Group(name=form.name.data , score = -1)
         db.session.add(group)
         current_user.leader = True
         db.session.commit()
@@ -237,6 +279,10 @@ def addGroup():
 # @isStudent()
 # @isLeader()
 def deleteGroup(id):
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     group = Group.query.get_or_404(id)
     try:
         db.session.delete(group)
@@ -260,6 +306,10 @@ def deleteGroup(id):
 # @login_required
 # @isStudent()
 def leaveGroup(id):
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     if current_user.id == id:
         user = User.query.get_or_404(id)
         try:
@@ -288,6 +338,10 @@ def leaveGroup(id):
 # @isStudent()
 # @isLeader()
 def removeMember(id):
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     if current_user.id != id:
         user = User.query.get_or_404(id)
         try:
@@ -315,7 +369,10 @@ def removeMember(id):
 # @login_required
 # @isAdmin()
 def publishProposal():
-    
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('index'))
     proposals = Proposal.query.filter_by()
     authors = []
     for proposal in proposals:
@@ -330,6 +387,10 @@ def publishProposal():
 # @login_required
 # @isAdmin()
 def publishProposals(id):
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('index'))
     proposal = Proposal.query.get_or_404(id)
     
     try:
@@ -353,10 +414,13 @@ def publishProposals(id):
 
 @app.route('/r', methods=['GET', 'POST'])
 # @login_required
-# @isStudent
-# @isLeader
+# @isStudent()
+# @isLeader()
 def rank():
-
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     Session = sessionmaker(bind=db.engine)
     session = Session()
     proposals = session.query(Proposal)
@@ -382,9 +446,13 @@ def rank():
 
 @app.route('/writefile', methods=['POST'])
 # @login_required
-# @isStudent
-# @isLeader
+# @isStudent()
+# @isLeader()
 def writefile():
+    if not isinstance(dateRank, str):
+        if dateRank < date.today():
+            flash('deadline has passed!','danger')
+            return redirect(url_for('group'))
     print("2")
     if request.method == 'POST':
         rankDict = dict()
@@ -418,37 +486,87 @@ def writefile():
         return ""
 
 
-# @app.route('/assign_project')
-
-# def assign_project():
+@app.route('/assign_project')
 # @login_required
-# @isAdmin
-
-#     super_list = []
-#     taken = []  
-#     with open('rankings.csv', 'r') as file:
-#         reader = csv.reader(file)
-#         for row in reader:
-#             super_list.append(row)
-
-#     # Sort the sublists based on the highest first index
-#     super_list.sort(key=lambda x: float(x[0]), reverse=True)
-
-#     # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
-#     result = []
-#     for sublist in super_list:
-#         for i in range(2, len(sublist)):
-#             if sublist[i] not in taken:
-#                 group = Group.query.filter_by(id = sublist[1]).first()
-#                 prop = Proposal.query.filter_by(id = sublist[i]).first()
-#                 group.set_proposal(prop)
-#                 result.append((sublist[1], sublist[i]))
-#                 taken.append(sublist[i])
-#                 break
+# @isAdmin()
+def assign_project():
 
 
-     
-    
+    super_list = []
+    taken = []  
+    with open('rankings.csv', 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            super_list.append(row)
+
+    # Sort the sublists based on the highest first index
+    super_list.sort(key=lambda x: float(x[0]), reverse=True)
+
+    # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
+    result = []
+    for sublist in super_list:
+        for i in range(2, len(sublist)):
+            if sublist[i] not in taken:
+                group = Group.query.filter_by(id = sublist[1]).first()
+                prop = Proposal.query.filter_by(id = sublist[i]).first()
+                group.set_proposal(prop)
+                result.append((sublist[1], sublist[i]))
+                taken.append(sublist[i])
+                break
 
 
-#     return render_template('assign_project.html')
+        
+
+
+
+    return render_template('assign_project.html')
+
+
+@app.route('/faculty_view_group', methods=['GET', 'POST'])
+# @login_required
+# @isFaculty()
+def facultyView():
+    proposals = Proposal.query.filter_by(author = current_user.id)
+    groups = []
+    addresses = []
+    address = ""
+    for proposal in proposals:
+        group = Group.query.filter_by(id = proposal.holder).first()
+        groups.append(group)
+        if group is None:
+            flash("Whoops! you havent been assigned a group yet...", 'danger')
+            return redirect(url_for('index'))
+        members = group.members
+        for member in members:
+            address += str(member.email)
+            address += str(",")
+        address = address.rstrip(",")
+        addresses.append(address)
+
+    addresses.reverse()
+        
+
+    return render_template("assigned_group.html", title='Proposal', groups=groups, addresses = addresses)
+
+
+@app.route('/evaulte/<int:id>')
+# @login_required
+# @isFaculty()
+def evaulte(id):
+
+    group = Group.query.get_or_404(id)
+    try:
+        group.score = score
+        db.session.commit()
+
+        # Return a message
+        flash("Group was evaulted!",'info')
+
+        return redirect(url_for('facultyView'))
+
+
+    except:
+        # Return an error message
+        flash("Whoops! There was a problem evaulting group, try again...", 'danger')
+
+        return redirect(url_for('facultyView'))

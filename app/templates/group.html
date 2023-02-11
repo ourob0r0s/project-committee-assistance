@@ -23,9 +23,11 @@
         <tr>
             <td>{{ member.sId }}</td>
             <td>{{ member.username }}</td>
-            {% if current_user.leader and current_user.id != member.id %}
+            {% if current_user.leader %}
             <td>
+                {% if current_user.id != member.id %}
             <a href="{{ url_for('removeMember', id=member.id)}}" class="btn btn-outline-danger btn-sm">remove</a>
+                {% endif %} 
             </td>
             {% endif %} 
         </tr>

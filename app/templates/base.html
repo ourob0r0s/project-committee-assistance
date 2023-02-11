@@ -45,30 +45,35 @@
               </button>
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto my-2 my-lg-0 ">
-                  {% if current_user.faculty%}
+                  {% if current_user.faculty %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="#">faculty</a>
+                    <a class="nav-link active" href="{{ url_for('proposal') }}" >proposal</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('facultyView') }}" >group</a>
                   </li>
                   {% endif %}
-                  {% if current_user.student%}
+                  {% if current_user.student %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="#">student</a>
+                      <a class="nav-link active" href="{{ url_for('group') }}">group</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('viewProposal') }}">proposals</a>
                   </li>
                   {% endif %}
-                  {% if current_user.admin%}
+                  {% if current_user.leader %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="#">admin</a>
+                    <a class="nav-link active" href="{{ url_for('rank') }}">rank</a>
                   </li>
                   {% endif %}
-                  {% if current_user.leader%}
+                  {% if current_user.admin %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="#">leader</a>
+                      <a class="nav-link active" href="{{ url_for('deadline') }}">deadline</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('publishProposal') }}">publish proposal</a>
+                </li>
                   {% endif %}
-                  {% block navelem %}{% endblock %}
-                  <!-- <li class="nav-item">
-                    <a class="nav-link active" href="#">Home</a>
-                  </li> -->
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                   <li class="nav-item dropdown">
@@ -77,9 +82,9 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                       <li><a class="dropdown-item" href="https://drive.google.com/file/d/1VbPR2pOq-kX2ksjfr5dyKAea0V6CmqQD/view?usp=share_link" target="_blank">Project handbook</a></li>
-                      <li><a class="dropdown-item" href="#">Capstone example 1</a></li>
-                      <li><a class="dropdown-item" href="#">Capstone example 2</a></li>
-                      <li><a class="dropdown-item" href="#">Capstone example 3</a></li>
+                      <li><a class="dropdown-item" href="https://drive.google.com/file/d/1eKyhdBaSj45o5GLAYqaVi6G7IcXk_cEh/view?usp=share_link" target="_blank">Capstone example 1</a></li>
+                      <li><a class="dropdown-item" href="https://drive.google.com/file/d/1o32RHQithH40gqX-PlCdtmTeoguyjol5/view?usp=share_link" target="_blank">Capstone example 2</a></li>
+                      <li><a class="dropdown-item" href="https://drive.google.com/file/d/1CpBn8cGpauZD1jJNNMo8z3eImlFIcLkC/view?usp=share_link" target="_blank">Capstone example 3</a></li>
                     </ul>
                   </li>
                   {% if current_user.is_anonymous %}

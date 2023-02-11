@@ -1,7 +1,13 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField, TextAreaField,DateField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length, NumberRange
 from app.models import User, Group, Proposal
+
+
+class deadlineSet(FlaskForm):
+    dateProposal = DateField('propoosal Date', validators=[DataRequired()])
+    dateRank = DateField('ranking Date', validators=[DataRequired()])
+    submit = SubmitField('confirm')
 
 
 class groupJoin(FlaskForm):
