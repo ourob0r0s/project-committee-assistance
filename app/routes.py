@@ -12,8 +12,7 @@ import csv
 @app.route('/')
 @app.route('/index')
 def index():
-    current_user.leader = True
-    db.session.commit()
+    
     return render_template("index.html", title='Home Page')
 
 
@@ -103,30 +102,46 @@ def facultyRegister():
 
 
 @app.route('/proposal', methods=['GET', 'POST'])
-@login_required
-@isFaculty()
+# @login_required
+# @isFaculty()
 def proposal():
 
     proposals = Proposal.query.filter_by(author = current_user.id)
     
     return render_template("proposal.html", title='Proposal', proposals=proposals)
 
+@app.route('/view_proposal', methods=['GET', 'POST'])
+# @login_required
+# @isStudent()
+def viewProposal():
+    authors = []
+    proposals = Proposal.query.filter_by(published = True)
+    for proposal in proposals:
+        user = User.query.filter_by(id = proposal.author).first()
+        authors.append(user.username)
+    authors.reverse()
+        
+        
+    return render_template("view_proposal.html", title='Proposal', proposals=proposals, authors = authors)
+
 
 @app.route('/add_proposal', methods=['GET', 'POST'])
-@login_required
-@isFaculty()
+# @login_required
+# @isFaculty()
 def addProposal():
     form = proposalAdd()
+    count = Proposal.query.filter_by(author = current_user.id).count()
+    if count > 1:
+        flash('cant add more than 2 proposals!','danger')
+        return redirect(url_for('proposal'))
     if form.validate_on_submit():
         prop = Proposal(title= form.title.data, desc=form.desc.data)
         db.session.add(prop)
         db.session.commit()
-
         prop = Proposal.query.filter_by(title = form.title.data).first()
         props = current_user.author
         props.append(prop)
         current_user.set_author(props)
-        print(prop.author)
         flash('Congratulations, your proposal has been added!','success')
         return redirect(url_for('proposal'))
     return render_template("add_proposal.html", title='add Proposal', form=form)
@@ -134,8 +149,8 @@ def addProposal():
 
 
 @app.route('/proposal/delete/<int:id>')
-@login_required
-@isFaculty()
+# @login_required
+# @isFaculty()
 def deleteProposal(id):
     proposal = Proposal.query.get_or_404(id)
     id = current_user.id
@@ -164,8 +179,8 @@ def deleteProposal(id):
 
 
 @app.route('/group', methods=['GET', 'POST'])
-@login_required
-@isStudent()
+# @login_required
+# @isStudent()
 def group():
     if current_user.member is None:
         return redirect(url_for('joinGroup'))
@@ -174,8 +189,8 @@ def group():
     return render_template("group.html", title='Group', group = group)
 
 @app.route('/join_group', methods=['GET', 'POST'])
-@login_required
-@isStudent()
+# @login_required
+# @isStudent()
 def joinGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
@@ -183,6 +198,9 @@ def joinGroup():
     if form.validate_on_submit():
         group = Group.query.filter_by(name = form.name.data).first()
         members = group.members
+        if len(members) > 2:
+            flash('group full!','danger')
+            return redirect(url_for('group'))
         members.append(current_user)
         group.set_member(members)
         return redirect(url_for('group'))
@@ -191,8 +209,8 @@ def joinGroup():
 
 
 @app.route('/add_group', methods=['GET', 'POST'])
-@login_required
-@isStudent()
+# @login_required
+# @isStudent()
 def addGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
@@ -209,16 +227,15 @@ def addGroup():
         group.set_member(members)
         
 
-        print(group.members)
         flash('Congratulations, you have created a group!', 'success')
         return redirect(url_for('group'))
     return render_template("add_group.html", title='Create group', form=form)
 
 
 @app.route('/group/delete/<int:id>')
-@login_required
-@isStudent()
-@isLeader()
+# @login_required
+# @isStudent()
+# @isLeader()
 def deleteGroup(id):
     group = Group.query.get_or_404(id)
     try:
@@ -239,12 +256,37 @@ def deleteGroup(id):
         return redirect(url_for('group'))
 
 
+@app.route('/group/leave/<int:id>')
+# @login_required
+# @isStudent()
+def leaveGroup(id):
+    if current_user.id == id:
+        user = User.query.get_or_404(id)
+        try:
+            user.member = None
+            db.session.commit()
 
+            # Return a message
+            flash("you left the group!",'info')
+
+
+            return redirect(url_for('group'))
+
+        except:
+            # Return an error message
+            flash("Whoops! There was a problem, try again...", 'danger')
+
+            return redirect(url_for('group'))
+    else:
+            # Return an error message
+        flash("Whoops! There was a problem, try again...", 'danger')
+
+        return redirect(url_for('group'))
 
 @app.route('/group/remove/<int:id>')
-@login_required
-@isStudent()
-@isLeader()
+# @login_required
+# @isStudent()
+# @isLeader()
 def removeMember(id):
     if current_user.id != id:
         user = User.query.get_or_404(id)
@@ -270,25 +312,30 @@ def removeMember(id):
         return redirect(url_for('group'))
 
 @app.route('/publish_proposal', methods=['GET', 'POST'])
-@login_required
+# @login_required
+# @isAdmin()
 def publishProposal():
     
     proposals = Proposal.query.filter_by()
+    authors = []
+    for proposal in proposals:
+        user = User.query.filter_by(id = proposal.author).first()
+        authors.append(user.username)
+    authors.reverse()
     
-    return render_template("publish_proposal.html", title='Publish Proposal', proposals = proposals)
+    return render_template("publish_proposal.html", title='Publish Proposal', proposals = proposals, authors = authors)
 
 
 @app.route('/publish_proposal/<int:id>', methods=['GET', 'POST'])
-@login_required
+# @login_required
+# @isAdmin()
 def publishProposals(id):
     proposal = Proposal.query.get_or_404(id)
     
     try:
         if proposal.published:
-            print(1)
             proposal.published = False
         else:
-            print(0)
             proposal.published = True
             
         db.session.commit()
@@ -305,6 +352,9 @@ def publishProposals(id):
     
 
 @app.route('/r', methods=['GET', 'POST'])
+# @login_required
+# @isStudent
+# @isLeader
 def rank():
 
     Session = sessionmaker(bind=db.engine)
@@ -331,6 +381,9 @@ def rank():
 
 
 @app.route('/writefile', methods=['POST'])
+# @login_required
+# @isStudent
+# @isLeader
 def writefile():
     print("2")
     if request.method == 'POST':
@@ -363,3 +416,39 @@ def writefile():
             writer = csv.writer(File)
             writer.writerow(toplist)
         return ""
+
+
+# @app.route('/assign_project')
+
+# def assign_project():
+# @login_required
+# @isAdmin
+
+#     super_list = []
+#     taken = []  
+#     with open('rankings.csv', 'r') as file:
+#         reader = csv.reader(file)
+#         for row in reader:
+#             super_list.append(row)
+
+#     # Sort the sublists based on the highest first index
+#     super_list.sort(key=lambda x: float(x[0]), reverse=True)
+
+#     # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
+#     result = []
+#     for sublist in super_list:
+#         for i in range(2, len(sublist)):
+#             if sublist[i] not in taken:
+#                 group = Group.query.filter_by(id = sublist[1]).first()
+#                 prop = Proposal.query.filter_by(id = sublist[i]).first()
+#                 group.set_proposal(prop)
+#                 result.append((sublist[1], sublist[i]))
+#                 taken.append(sublist[i])
+#                 break
+
+
+     
+    
+
+
+#     return render_template('assign_project.html')
