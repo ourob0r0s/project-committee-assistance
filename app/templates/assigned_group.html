@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="d-flex aligns-items-center justify-content-center header" style= "margin-top: 3%;">Assign Group</h1>
+<h1 class="d-flex aligns-items-center justify-content-center header" style= "margin-top: 3%;">Assigned Group</h1>
 <br>
 <br>
 
@@ -22,14 +22,17 @@
             {% for group in groups %}
             <tr>
                 <td>{{ group.name }}</td>
-                <td><<a href="mailto:{{ addresses.pop() }}" class="btn btn-outline-info btn-sm" style="margin-bottom: 10px;"></a>
-                    Contact
+                <td><a href="mailto:{{ addresses.pop() }}" class="btn btn-outline-info btn-sm" style="margin-bottom: 10px;" >Contact</a>
+                    
                 </td>
-                {% if group.score > -1 %}
-                <td><<a href="{{ url_for('evaulte', id = group.id) }}" class="btn btn-outline-info btn-sm" style="margin-bottom: 10px;"></a>
-                    evaulte
+                
+                <td>
+                    {% if group.score == -1 %}
+                    <a href="{{ url_for('evaluate', id = group.id) }}" class="btn btn-outline-info btn-sm" style="margin-bottom: 10px;">evaluate</a>
+                    
+                    {% endif %}
                 </td>
-                {{% endif %}}
+                
                 
             </tr>
             

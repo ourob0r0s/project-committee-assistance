@@ -66,7 +66,7 @@ class Group(db.Model):
     gpa = db.Column(db.Float)
     name = db.Column(db.String(20), nullable=False, unique=True)
     score = db.Column(db.Integer)
-    # ranked = db.Column(db.Boolean, default=False)
+    ranked = db.Column(db.Boolean, default=False)
 
 
     members = db.relationship('User', backref='group', lazy=True) 

@@ -23,6 +23,9 @@ def index():
     global dateProposal
     global dateRank
     current_user.admin = True
+    current_user.leader = True
+    current_user.studnet = True
+    current_user.faculty = True
     return render_template("index.html", title='Home Page', dateProposal = dateProposal, dateRank = dateRank)
 
 
@@ -119,7 +122,6 @@ def deadline():
         global dateRank
         dateProposal = form.dateProposal.data
         dateRank = form.dateRank.data
-        print(dateRank)
         flash('deadline has been submitted!','success')
         return redirect(url_for('index'))
                 
@@ -412,15 +414,22 @@ def publishProposals(id):
     
     
 
-@app.route('/r', methods=['GET', 'POST'])
+@app.route('/rank', methods=['GET', 'POST'])
 # @login_required
 # @isStudent()
 # @isLeader()
 def rank():
+    if current_user.member is None:
+        return redirect(url_for('group'))
     if not isinstance(dateRank, str):
         if dateRank < date.today():
-            flash('deadline has passed!','danger')
-            return redirect(url_for('group'))
+                flash('deadline has passed!','danger')
+                return redirect(url_for('index'))
+    group = Group.query.filter_by(id = current_user.member).first()
+    group.ranked = False
+    if group.ranked:
+        flash('already submitted!','danger')
+        return redirect(url_for('index'))
     Session = sessionmaker(bind=db.engine)
     session = Session()
     proposals = session.query(Proposal)
@@ -449,11 +458,6 @@ def rank():
 # @isStudent()
 # @isLeader()
 def writefile():
-    if not isinstance(dateRank, str):
-        if dateRank < date.today():
-            flash('deadline has passed!','danger')
-            return redirect(url_for('group'))
-    print("2")
     if request.method == 'POST':
         rankDict = dict()
         rankDict = request.form
@@ -463,27 +467,27 @@ def writefile():
         sum = 0
         for member in members:
             sum += member.gpa
-        avg = sum/3
+        count = User.query.filter_by(member = group.id).count()
+        avg = sum/count
         group.gpa = avg
-        db.session.commit()
         toplist.append(avg)
         toplist.append(current_user.member)
         temp = list(rankDict.values())
         toplist += temp
         
+        if len(toplist) != 12:
+            flash("Whoops! There was a problem ranking proposals, try again...", 'danger')
+            return redirect(url_for('index'))
         
-        if len(toplist) != 5:
-            print("9")
-            flash("Whoops! There was a problem deleting proposal, try again...", 'danger')
-            print("5")
-            return ""
+        # group.ranked = True
+        # db.session.commit()
 
 
-        print(toplist)
         with open('rankings.csv', 'a', newline='') as File:
             writer = csv.writer(File)
             writer.writerow(toplist)
-        return ""
+        return redirect(url_for('index'))
+
 
 
 @app.route('/assign_project')
@@ -503,20 +507,43 @@ def assign_project():
     super_list.sort(key=lambda x: float(x[0]), reverse=True)
 
     # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
-    result = []
+    no_project = []
     for sublist in super_list:
+        #found = False
         for i in range(2, len(sublist)):
             if sublist[i] not in taken:
                 group = Group.query.filter_by(id = sublist[1]).first()
                 prop = Proposal.query.filter_by(id = sublist[i]).first()
-                group.set_proposal(prop)
-                result.append((sublist[1], sublist[i]))
+                proposal = group.holder
+                proposal.append(prop)
+                group.set_proposal(proposal)
+                prop.owned = True
+                db.session.commit()
                 taken.append(sublist[i])
+                # found = True
                 break
 
 
-        
+    Session = sessionmaker(bind=db.engine)
+    session = Session()
+    proposals = session.query(Proposal)
 
+    all_proposals =[]
+
+    for proposal in proposals:
+        id = str(proposal.id)
+        all_proposals.append(id)
+    
+
+    groups = Group.query.filter_by(ranked = False)
+
+    for group in groups:
+        prop = Proposal.query.filter_by(owned = False).first()
+        proposal= [prop]
+        group.set_proposal(proposal)
+
+        
+    
 
 
     return render_template('assign_project.html')
@@ -549,10 +576,10 @@ def facultyView():
     return render_template("assigned_group.html", title='Proposal', groups=groups, addresses = addresses)
 
 
-@app.route('/evaulte/<int:id>')
+@app.route('/evaluate/<int:id>')
 # @login_required
 # @isFaculty()
-def evaulte(id):
+def evaluate(id):
 
     group = Group.query.get_or_404(id)
     try:
