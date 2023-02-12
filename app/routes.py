@@ -1,8 +1,8 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin, deadlineSet
+from app.forms import studentLoginForm, facultyLoginForm, facultyRegisterForm, studentRegisterForm, proposalAdd, groupAdd, groupJoin, deadlineSet, evaluateForm
 from app.models import User, Proposal, Group
 from app.decorators import isFaculty, isAdmin, isStudent, isLeader
 from sqlalchemy.orm import sessionmaker
@@ -426,7 +426,6 @@ def rank():
                 flash('deadline has passed!','danger')
                 return redirect(url_for('index'))
     group = Group.query.filter_by(id = current_user.member).first()
-    group.ranked = False
     if group.ranked:
         flash('already submitted!','danger')
         return redirect(url_for('index'))
@@ -447,17 +446,6 @@ def rank():
                 fName = fmember.username
         Arr1.append(( id,title,fName))
 
-
-
-
-    return render_template('ranking.html', data=Arr1)
-
-
-@app.route('/writefile', methods=['POST'])
-# @login_required
-# @isStudent()
-# @isLeader()
-def writefile():
     if request.method == 'POST':
         rankDict = dict()
         rankDict = request.form
@@ -474,19 +462,19 @@ def writefile():
         toplist.append(current_user.member)
         temp = list(rankDict.values())
         toplist += temp
-        
         if len(toplist) != 12:
-            flash("Whoops! There was a problem ranking proposals, try again...", 'danger')
-            return redirect(url_for('index'))
+            abort(400)
         
-        # group.ranked = True
-        # db.session.commit()
+        group.ranked = True
+        db.session.commit()
 
 
         with open('rankings.csv', 'a', newline='') as File:
             writer = csv.writer(File)
             writer.writerow(toplist)
-        return redirect(url_for('index'))
+        
+    return render_template('ranking.html', data=Arr1)
+
 
 
 
@@ -520,7 +508,6 @@ def assign_project():
                 prop.owned = True
                 db.session.commit()
                 taken.append(sublist[i])
-                # found = True
                 break
 
 
@@ -542,8 +529,8 @@ def assign_project():
         proposal= [prop]
         group.set_proposal(proposal)
 
-        
-    
+    # flash('Groups Assigned!','success')    
+    # return redirect(url_for("index"))
 
 
     return render_template('assign_project.html')
@@ -559,37 +546,41 @@ def facultyView():
     address = ""
     for proposal in proposals:
         group = Group.query.filter_by(id = proposal.holder).first()
-        groups.append(group)
-        if group is None:
-            flash("Whoops! you havent been assigned a group yet...", 'danger')
-            return redirect(url_for('index'))
-        members = group.members
-        for member in members:
-            address += str(member.email)
-            address += str(",")
-        address = address.rstrip(",")
-        addresses.append(address)
-
-    addresses.reverse()
+        
+        if group is not None:
+            groups.append(group)
+            members = group.members
+            for member in members:
+                address += str(member.email)
+                address += str(",")
+            address = address.rstrip(",")
+            addresses.append(address)
+            print(address)
+            print(addresses)
+            addresses.reverse()
         
 
     return render_template("assigned_group.html", title='Proposal', groups=groups, addresses = addresses)
 
 
-@app.route('/evaluate/<int:id>')
+@app.route('/evaluate/<int:id>', methods=['GET', 'POST'])
 # @login_required
 # @isFaculty()
 def evaluate(id):
-
-    group = Group.query.get_or_404(id)
+    form = evaluateForm()
+    group = Group.query.filter_by(id = id).first()
     try:
-        group.score = score
-        db.session.commit()
+        if form.validate_on_submit():
+            group.score = form.data.s1 + form.data.s2 + form.data.s3
+            + form.data.s4 + form.data.s5 + form.data.s6
+            + form.data.s7 + form.data.s8 + form.data.s9
+            + form.data.s10 + form.data.s11 + form.data.s12
+            db.session.commit()
 
-        # Return a message
-        flash("Group was evaulted!",'info')
+            # Return a message
+            flash("Group was evaulted!",'info')
 
-        return redirect(url_for('facultyView'))
+            return redirect(url_for('facultyView'))
 
 
     except:
@@ -597,3 +588,4 @@ def evaluate(id):
         flash("Whoops! There was a problem evaulting group, try again...", 'danger')
 
         return redirect(url_for('facultyView'))
+    return render_template("evaluate.html", title='evaluate', form = form)

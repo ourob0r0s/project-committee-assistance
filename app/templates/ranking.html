@@ -2,10 +2,6 @@
 
 {% block content %}
 <head>
-    <title>Transfer Rows Between Two HTML Table</title>
-    <meta charset="windows-1252">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <style>
             table, th, td {
             border: 1px solid black;
@@ -78,7 +74,7 @@
 
 
     </div>
-
+    
     <script src="https://code.jquery.com/jquery-3.6.3.js"> </script>
     
     <script>
@@ -99,27 +95,39 @@
                 i--;
 
 
-            const rDict = {
-            groupId: arr2[0],
-            P1: arr2[1],
-            P2: arr2[2],
-            P3: arr2[3],
-            P4: arr2[4],
-            P5: arr2[5],
-            P6: arr2[6],
-            P7: arr2[7],
-            P8: arr2[8],
-            P9: arr2[9],
-            P10: arr2[10],
-            };
+                if (arr2.length != 10){
+                alert("Please rank exactly 10 proposals")
+            }
 
-            $.ajax({
-            type: "POST",
-            url: '/writefile',
-            data: rDict
-            })
+            else{
 
-            window.location.href = "http://127.0.0.1:5000/rank";
+                const rDict = {
+                P1: arr2[0],
+                P2: arr2[1],
+                P3: arr2[2],
+                P4: arr2[3],
+                P5: arr2[4],
+                P6: arr2[5],
+                P7: arr2[6],
+                P8: arr2[7],
+                P9: arr2[8],
+                P10: arr2[9],
+                };
+
+                $.ajax({
+                type: "POST",
+                url: '/rank',
+                data: rDict,
+
+                success: function (){
+                    window.location.href = "http://127.0.0.1:5000/index";
+                    alert("You submitted!")
+
+                }
+                
+                })
+                
+            }
             
             
         }

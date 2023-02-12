@@ -1,8 +1,24 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField, TextAreaField,DateField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, IntegerField, FloatField, TextAreaField, DateField, RadioField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length, NumberRange
 from app.models import User, Group, Proposal
 
+
+
+class evaluateForm(FlaskForm):
+    s1 = RadioField('Organization of report (title page, abstract, table of contents, reference list, ...)', choices=[1,2], validators=[DataRequired()])
+    s2 = RadioField('Introduction, motivations, objectives, and literature review', choices=[1,2], validators=[DataRequired()])
+    s3 = RadioField('Description of proposed project functional and non-functional requirements', choices=[1,2,3], validators=[DataRequired()])
+    s4 = RadioField('Usage of project particular management tools such as Gantt chart, WBS, etc.', choices=[1], validators=[DataRequired()])
+    s5 = RadioField('Following of particular information system development methodology such as SDLC, agile, etc.	', choices=[1], validators=[DataRequired()])
+    s6 = RadioField('Usage of diagrams such as ER, use case, class diagram, etc.', choices=[1,2,3,4,5,6], validators=[DataRequired()])
+    s7 = RadioField('Completion of all project requirements (functional and non-functional).', choices=[1,2,3,4], validators=[DataRequired()])
+    s8 = RadioField('Professional (clear, complete and consistence) presentation of the proposed system.', choices=[1,2,3,4], validators=[DataRequired()])
+    s9 = RadioField('Quality (logical and correctness) of the proposed system.', choices=[1,2,3,4,5,6,7], validators=[DataRequired()])
+    s10 = RadioField('Difficulty and size of the work.', choices=[1,2,3,4,5], validators=[DataRequired()])
+    s11 = RadioField('Students presentation Skills.', choices=[1,2], validators=[DataRequired()])
+    s12 = RadioField('Ability of students to answer questions about the analysis and design of the system.', choices=[1,2,3], validators=[DataRequired()])
+    submit = SubmitField('Confirm')
 
 class deadlineSet(FlaskForm):
     dateProposal = DateField('propoosal Date', validators=[DataRequired()])

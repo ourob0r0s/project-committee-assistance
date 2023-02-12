@@ -35,8 +35,6 @@ class UserModelCase(unittest.TestCase):
         user.set_password('cat')
         proposal = Proposal.query.filter_by(id=1).first()
         user.set_author([proposal])
-        print("")
-        print(user.author)
         db.session.add(user)
         user = User(username='khaled', email='daf@yahoo.com', student = True)
         user.set_password('cat')
@@ -46,30 +44,11 @@ class UserModelCase(unittest.TestCase):
         group = Group.query.filter_by(id=1).first()
         user = User.query.filter_by(id=2).first()
         group.set_member([user])
-        print(group.member)
 
-        print(User.query.all())
-        print(Proposal.query.all())
-        print(Group.query.all())
 
         
 
-    # def test_relationships(self):
-    #     faculty = User.query.filter_by(id=1).first()
-    #     student = User.query.filter_by(id=2).first()
-    #     proposal = Proposal.query.filter_by(id=1).first()
-    #     group = Group.query.filter_by(id=1).first()
-    #     faculty.set_proposal(1)
-    #     student.set_group(1)
-
-    #     print(faculty.pId)
-    #     print(student.gId)
-
-    #     db.session.commit()
-    #     print(User.query.all())
-    #     print(Proposal.query.all())
-    #     print(Group.query.all())
-
+        
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
