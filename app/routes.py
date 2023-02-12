@@ -184,6 +184,9 @@ def deleteProposal(id):
             flash('deadline has passed!','danger')
             return redirect(url_for('proposal'))
     proposal = Proposal.query.get_or_404(id)
+    if proposal.published:
+            flash('proposal already published!','danger')
+            return redirect(url_for('proposal'))
     id = current_user.id
     if id == proposal.author:
         try:
@@ -538,6 +541,7 @@ def assign_project():
             proposal= [prop]
             group.set_proposal(proposal)
             prop.owned = True
+            group.ranked = True
             db.session.commit()
         flash("Proposals Assigned", 'success')
         return redirect(url_for("index"))

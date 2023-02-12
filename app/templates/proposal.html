@@ -20,9 +20,12 @@
             {% for proposal in proposals %}
             <tr>
                 <td>{{ proposal.title }}</td>
-                <td>
+                
+                <td>{% if not proposal.published %}
                     <a href="{{ url_for('deleteProposal', id=proposal.id) }}" class="btn btn-outline-danger btn-sm" style="margin-bottom: 10px ;">Delete</a>
+                    {% endif %}
                 </td>
+                
             </tr>
             {% endfor %}
         </tbody>

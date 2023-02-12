@@ -37,13 +37,12 @@
 </div>
 
 <br>
-{% if group.ranked %}
+{% if not group.ranked %}
     {% if current_user.leader %}
     <div class="text-center" style="margin-top: 250px;"> <a href="{{ url_for('deleteGroup', id=group.id)}}" class="btn btn-outline-danger btn-lg" style="margin-bottom: 10px ;">Delete group</a> </div>
     {% else %}
-
     <div class="text-center" style="margin-top: 250px;"> <a href="{{ url_for('leaveGroup', id=current_user.id)}}" class="btn btn-outline-danger btn-lg" style="margin-bottom: 10px ;">Leave group</a> </div>
-{% endif %}
+    {% endif %}
 {% endif %}
 
 
