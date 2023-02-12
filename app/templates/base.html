@@ -47,34 +47,34 @@
                 <ul class="navbar-nav me-auto my-2 my-lg-0 ">
                   {% if current_user.faculty %}
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('proposal') }}" >proposal</a>
+                    <a class="nav-link active" href="{{ url_for('proposal') }}" >Proposal</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('facultyView') }}" >group</a>
+                    <a class="nav-link active" href="{{ url_for('facultyView') }}" >Group</a>
                   </li>
                   {% endif %}
                   {% if current_user.student %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="{{ url_for('group') }}">group</a>
+                      <a class="nav-link active" href="{{ url_for('group') }}">Group</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('viewProposal') }}">proposals</a>
+                    <a class="nav-link active" href="{{ url_for('viewProposal') }}">Proposals</a>
                   </li>
                   {% endif %}
                   {% if current_user.leader %}
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('rank') }}">rank</a>
+                    <a class="nav-link active" href="{{ url_for('rank') }}">Rank</a>
                   </li>
                   {% endif %}
                   {% if current_user.admin %}
                   <li class="nav-item">
-                      <a class="nav-link active" href="{{ url_for('deadline') }}">deadline</a>
+                      <a class="nav-link active" href="{{ url_for('deadline') }}">Deadline</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('publishProposal') }}">publish proposal</a>
+                    <a class="nav-link active" href="{{ url_for('publishProposal') }}">Publish Proposal</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('assign_project') }}">assign proposal</a>
+                    <a class="nav-link active" href="{{ url_for('assign_project') }}">Assign Proposals</a>
                   </li>
                   {% endif %}
                 </ul>

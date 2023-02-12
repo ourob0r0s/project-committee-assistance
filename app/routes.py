@@ -12,8 +12,6 @@ from datetime import date, timedelta
 
 global dateProposal 
 global dateRank 
-# dateProposal = date.today() - timedelta(1)
-# dateRank = date.today() - timedelta(1)
 dateProposal = 'not decided yet'
 dateRank = 'not decided yet'
 
@@ -22,13 +20,11 @@ dateRank = 'not decided yet'
 def index():
     global dateProposal
     global dateRank
-    current_user.admin = True
-    current_user.leader = True
-    current_user.studnet = True
-    current_user.faculty = True
     return render_template("index.html", title='Home Page', dateProposal = dateProposal, dateRank = dateRank)
 
-
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    return redirect(url_for("loginChoice"))
 @app.route('/login_choice', methods=['GET', 'POST'])
 def loginChoice():
     return render_template("auth/login_choice.html",title="login choice")
@@ -113,8 +109,8 @@ def facultyRegister():
 
 
 @app.route('/deadline', methods=['GET', 'POST'])
-# @login_required
-# @isAdmin()
+@login_required
+@isAdmin()
 def deadline():
     form = deadlineSet()
     if form.validate_on_submit():
@@ -128,8 +124,8 @@ def deadline():
     return render_template("deadline.html", title='deadline', form=form)
 
 @app.route('/proposal', methods=['GET', 'POST'])
-# @login_required
-# @isFaculty()
+@login_required
+@isFaculty()
 def proposal():
 
     proposals = Proposal.query.filter_by(author = current_user.id)
@@ -137,8 +133,8 @@ def proposal():
     return render_template("proposal.html", title='Proposal', proposals=proposals)
 
 @app.route('/view_proposal', methods=['GET', 'POST'])
-# @login_required
-# @isStudent()
+@login_required
+@isStudent()
 def viewProposal():
     authors = []
     proposals = Proposal.query.filter_by(published = True)
@@ -152,8 +148,8 @@ def viewProposal():
 
 
 @app.route('/add_proposal', methods=['GET', 'POST'])
-# @login_required
-# @isFaculty()
+@login_required
+@isFaculty()
 def addProposal():
     form = proposalAdd()
     if not isinstance(dateProposal, str):
@@ -180,8 +176,8 @@ def addProposal():
 
 
 @app.route('/proposal/delete/<int:id>')
-# @login_required
-# @isFaculty()
+@login_required
+@isFaculty()
 def deleteProposal(id):
     if not isinstance(dateProposal, str):
         if dateProposal < date.today():
@@ -214,8 +210,8 @@ def deleteProposal(id):
 
 
 @app.route('/group', methods=['GET', 'POST'])
-# @login_required
-# @isStudent()
+@login_required
+@isStudent()
 def group():
     if current_user.member is None:
         return redirect(url_for('joinGroup'))
@@ -224,8 +220,8 @@ def group():
     return render_template("group.html", title='Group', group = group)
 
 @app.route('/join_group', methods=['GET', 'POST'])
-# @login_required
-# @isStudent()
+@login_required
+@isStudent()
 def joinGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
@@ -237,6 +233,10 @@ def joinGroup():
             return redirect(url_for('group'))
     if form.validate_on_submit():
         group = Group.query.filter_by(name = form.name.data).first()
+        if group.ranked:
+            flash("you cant join a group that already submitted",'danger')
+            return redirect(url_for('group'))
+
         members = group.members
         if len(members) > 2:
             flash('group full!','danger')
@@ -249,8 +249,8 @@ def joinGroup():
 
 
 @app.route('/add_group', methods=['GET', 'POST'])
-# @login_required
-# @isStudent()
+@login_required
+@isStudent()
 def addGroup():
     if current_user.member is not None:
         return redirect(url_for('group'))
@@ -277,15 +277,18 @@ def addGroup():
 
 
 @app.route('/group/delete/<int:id>')
-# @login_required
-# @isStudent()
-# @isLeader()
+@login_required
+@isStudent()
+@isLeader()
 def deleteGroup(id):
     if not isinstance(dateRank, str):
         if dateRank < date.today():
             flash('deadline has passed!','danger')
             return redirect(url_for('group'))
     group = Group.query.get_or_404(id)
+    if group.ranked:
+            flash("you cant delete a group that already submitted",'danger')
+            return redirect(url_for('group'))
     try:
         db.session.delete(group)
         current_user.leader = False
@@ -305,8 +308,8 @@ def deleteGroup(id):
 
 
 @app.route('/group/leave/<int:id>')
-# @login_required
-# @isStudent()
+@login_required
+@isStudent()
 def leaveGroup(id):
     if not isinstance(dateRank, str):
         if dateRank < date.today():
@@ -314,6 +317,10 @@ def leaveGroup(id):
             return redirect(url_for('group'))
     if current_user.id == id:
         user = User.query.get_or_404(id)
+        group = Group.query.filter_by(id = user.member).first()
+        if group.ranked:
+            flash("you cant leave a group that already submitted",'danger')
+            return redirect(url_for('group'))
         try:
             user.member = None
             db.session.commit()
@@ -336,9 +343,9 @@ def leaveGroup(id):
         return redirect(url_for('group'))
 
 @app.route('/group/remove/<int:id>')
-# @login_required
-# @isStudent()
-# @isLeader()
+@login_required
+@isStudent()
+@isLeader()
 def removeMember(id):
     if not isinstance(dateRank, str):
         if dateRank < date.today():
@@ -346,6 +353,10 @@ def removeMember(id):
             return redirect(url_for('group'))
     if current_user.id != id:
         user = User.query.get_or_404(id)
+        group = Group.query.filter_by(id = user.member).first()
+        if group.ranked:
+                flash("you cant remove a member if you already submitted",'danger')
+                return redirect(url_for('group'))
         try:
             user.member = None
             db.session.commit()
@@ -368,8 +379,8 @@ def removeMember(id):
         return redirect(url_for('group'))
 
 @app.route('/publish_proposal', methods=['GET', 'POST'])
-# @login_required
-# @isAdmin()
+@login_required
+@isAdmin()
 def publishProposal():
     if not isinstance(dateRank, str):
         if dateRank < date.today():
@@ -386,8 +397,8 @@ def publishProposal():
 
 
 @app.route('/publish_proposal/<int:id>', methods=['GET', 'POST'])
-# @login_required
-# @isAdmin()
+@login_required
+@isAdmin()
 def publishProposals(id):
     if not isinstance(dateRank, str):
         if dateRank < date.today():
@@ -415,9 +426,9 @@ def publishProposals(id):
     
 
 @app.route('/rank', methods=['GET', 'POST'])
-# @login_required
-# @isStudent()
-# @isLeader()
+@login_required
+@isStudent()
+@isLeader()
 def rank():
     if current_user.member is None:
         return redirect(url_for('group'))
@@ -438,13 +449,14 @@ def rank():
 
 
     for proposal in proposals:
-        id = proposal.id
-        title = proposal.title
-        fid = proposal.author
-        for fmember in Fmember:
-            if fmember.id == fid:
-                fName = fmember.username
-        Arr1.append(( id,title,fName))
+        if proposal.published == True:
+            id = proposal.id
+            title = proposal.title
+            fid = proposal.author
+            for fmember in Fmember:
+                if fmember.id == fid:
+                    fName = fmember.username
+            Arr1.append(( id,title,fName))
 
     if request.method == 'POST':
         rankDict = dict()
@@ -478,67 +490,69 @@ def rank():
 
 
 
-@app.route('/assign_project')
-# @login_required
-# @isAdmin()
+@app.route('/assign_project', methods=['GET', 'POST'])
+@login_required
+@isAdmin()
 def assign_project():
+    if request.method == 'POST':
+        super_list = []
+        taken = []  
+        with open('rankings.csv', 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                super_list.append(row)
+
+        # Sort the sublists based on the highest first index
+        super_list.sort(key=lambda x: float(x[0]), reverse=True)
+
+        # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
+        no_project = []
+        for sublist in super_list:
+            for i in range(2, len(sublist)):
+                if sublist[i] not in taken:
+                    group = Group.query.filter_by(id = sublist[1]).first()
+                    prop = Proposal.query.filter_by(id = sublist[i]).first()
+                    proposal = group.holder
+                    proposal.append(prop)
+                    group.set_proposal(proposal)
+                    prop.owned = True
+                    db.session.commit()
+                    taken.append(sublist[i])
+                    break
 
 
-    super_list = []
-    taken = []  
-    with open('rankings.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            super_list.append(row)
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        proposals = session.query(Proposal)
 
-    # Sort the sublists based on the highest first index
-    super_list.sort(key=lambda x: float(x[0]), reverse=True)
+        all_proposals =[]
 
-    # Return the second element (Group_ID) of each sublist and its first avilable element (Project_ID) in pairs
-    no_project = []
-    for sublist in super_list:
-        #found = False
-        for i in range(2, len(sublist)):
-            if sublist[i] not in taken:
-                group = Group.query.filter_by(id = sublist[1]).first()
-                prop = Proposal.query.filter_by(id = sublist[i]).first()
-                proposal = group.holder
-                proposal.append(prop)
-                group.set_proposal(proposal)
-                prop.owned = True
-                db.session.commit()
-                taken.append(sublist[i])
-                break
+        for proposal in proposals:
+            id = str(proposal.id)
+            all_proposals.append(id)
+        
 
+        groups = Group.query.filter_by(ranked = False)
+        for group in groups:
+            prop = Proposal.query.filter_by(owned = False).first()
+            proposal= [prop]
+            group.set_proposal(proposal)
+            prop.owned = True
+            db.session.commit()
+        flash("Proposals Assigned", 'success')
+        return redirect(url_for("index"))
 
-    Session = sessionmaker(bind=db.engine)
-    session = Session()
-    proposals = session.query(Proposal)
-
-    all_proposals =[]
-
-    for proposal in proposals:
-        id = str(proposal.id)
-        all_proposals.append(id)
-    
-
-    groups = Group.query.filter_by(ranked = False)
-
-    for group in groups:
-        prop = Proposal.query.filter_by(owned = False).first()
-        proposal= [prop]
-        group.set_proposal(proposal)
-
-    # flash('Groups Assigned!','success')    
-    # return redirect(url_for("index"))
-
+    group = Group.query.filter_by().first()
+    if group.holder:
+        flash("Proposals Already Assigned", 'info')
+        return redirect(url_for("index")) 
 
     return render_template('assign_project.html')
 
 
 @app.route('/faculty_view_group', methods=['GET', 'POST'])
-# @login_required
-# @isFaculty()
+@login_required
+@isFaculty()
 def facultyView():
     proposals = Proposal.query.filter_by(author = current_user.id)
     groups = []
@@ -548,6 +562,8 @@ def facultyView():
         group = Group.query.filter_by(id = proposal.holder).first()
         
         if group is not None:
+            # group.score = -1
+            # db.session.commit()
             groups.append(group)
             members = group.members
             for member in members:
@@ -555,8 +571,6 @@ def facultyView():
                 address += str(",")
             address = address.rstrip(",")
             addresses.append(address)
-            print(address)
-            print(addresses)
             addresses.reverse()
         
 
@@ -564,17 +578,14 @@ def facultyView():
 
 
 @app.route('/evaluate/<int:id>', methods=['GET', 'POST'])
-# @login_required
-# @isFaculty()
+@login_required
+@isFaculty()
 def evaluate(id):
     form = evaluateForm()
     group = Group.query.filter_by(id = id).first()
     try:
         if form.validate_on_submit():
-            group.score = form.data.s1 + form.data.s2 + form.data.s3
-            + form.data.s4 + form.data.s5 + form.data.s6
-            + form.data.s7 + form.data.s8 + form.data.s9
-            + form.data.s10 + form.data.s11 + form.data.s12
+            group.score = int(form.s1.data) + int(form.s2.data) + int(form.s3.data) + int(form.s4.data) + int(form.s5.data) + int(form.s6.data) + int(form.s7.data) + int(form.s8.data) + int(form.s9.data) + int(form.s10.data) + int(form.s11.data) + int(form.s12.data) + int(form.s13.data) + int(form.s14.data) + int(form.s15.data) + int(form.s16.data) + int(form.s17.data)
             db.session.commit()
 
             # Return a message
